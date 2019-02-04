@@ -1,0 +1,12 @@
+{
+  "name": "BOT1",
+  "version": "1.0.0",
+  "description": "TESTOWANKO",
+  "main": "bot.js",
+  "author": "One Of Us",
+  "dependencies": {
+    "discord.io": "https://github.com/woor/discord.io/tarball/gateway_v6",
+    "discord.js": "^11.4.2",
+    "winston": "^3.2.1"
+  }
+}
