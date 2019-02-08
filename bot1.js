@@ -22,33 +22,13 @@ var data6;
 var data7;
 
 client.login(`NTQyMDM5MTY0NTc3OTA2Njg4.Dzo3Ig.ZmYG1sYlxAZRDJ8V8GZeZwQMsEk`);
-/*
-client.on("ready", async ()=>{
+
+client.on("ready", ()=>{
     console.log(`Bot is ready! ${client.user.username}`);
 
-    try {
-        let link = await client.generateInvite(["ADMINISTRATOR"]);
-        console.log(link);
-    } catch(e) {
-        console.log(e.stack);
-    }
-});
-*/
-client.on("message", async message => {
-
-    if(message.channel.type === "dm") return;
-
-    let messageArray = message.content.split(" ");
-    let command = messageArray[0];
-    let args = messageArray.slice(1);
-
-    if(!command.startsWith(prefix)) return;
-
-    if(command === `${prefix}statusMID`){
-		update();
-		clearInterval(timeInterval);
-		timeInterval = setInterval(update,300000);
-    }
+	update();
+	clearInterval(timeInterval);
+	timeInterval = setInterval(update,300000);
 });
 
 async function status(){
