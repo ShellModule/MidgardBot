@@ -1,12 +1,16 @@
 {
-  "name": "BOT1",
-  "version": "1.0.0",
-  "description": "TESTOWANKO",
-  "main": "bot.js",
-  "author": "One Of Us",
-  "dependencies": {
-    "discord.io": "https://github.com/woor/discord.io/tarball/gateway_v6",
-    "discord.js": "^11.4.2",
-    "winston": "^3.2.1"
-  }
+	"name": "discord.js-boilerplate",
+	"version": "1.0.0",
+	"description": "A boilerplate for Discord.js-commando.",
+	"main": "bot.js",
+	"scripts": {
+		"test": "node bot"
+	},
+	"author": "jasonhaxstuff",
+	"license": "GPL-3.0",
+	"dependencies": {
+		"discord.js": "^11.3.2",
+		"discord.js-commando": "^0.10.0",
+		"sqlite": "^2.9.2"
+	}
 }

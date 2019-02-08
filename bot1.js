@@ -44,6 +44,7 @@ client.on("message", async message => {
 
     if(command === `${prefix}statusMID`){
 		update();
+		clearInterval(timeInterval);
 		timeInterval = setInterval(update,60000);
     }
 });
