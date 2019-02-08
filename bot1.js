@@ -28,7 +28,7 @@ client.on("ready", ()=>{
 
 	update();
 	clearInterval(timeInterval);
-	timeInterval = setInterval(update,300000);
+	timeInterval = setInterval(update,60000);
 });
 
 async function status(){
@@ -73,12 +73,12 @@ async function status(){
 	.addField(":flag_gb:**Midgard [Climb]**","**Address**: <soldat://51.68.213.93:23082> \n **Players:**  `" + data6[0] + "/" + data6[1] + "`<:crouch:533700465670619197> **Map:**  `" + data6[2] + "`:map:")
 	.addField(":flag_gb:**Midgard [AlphaZRPG]**","**Address**: <soldat://51.68.213.93:23083> \n **Players:**  `" + data7[0] + "/" + data7[1] + "`<:crouch:533700465670619197> **Map:**  `" + data7[2] + "`:map:")
 	.setTimestamp(new Date());
-	await client.channels.get(`543448415091032065`).send(embed);
+	await client.channels.get(`537011480973934592`).send(embed);
 }
 
 async function update(){
-	let fetched = await client.channels.get(`543448415091032065`).fetchMessages({limit: 10});
-	client.channels.get(`543448415091032065`).bulkDelete(fetched);
+	let fetched = await client.channels.get(`537011480973934592`).fetchMessages({limit: 10});
+	client.channels.get(`537011480973934592`).bulkDelete(fetched);
 	status();
 }
 
