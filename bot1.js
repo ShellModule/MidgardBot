@@ -21,7 +21,7 @@ var data5;
 var data6;
 var data7;
 
-client.login(`NTQyMDM5MTY0NTc3OTA2Njg4.Dzo3Ig.ZmYG1sYlxAZRDJ8V8GZeZwQMsEk`);
+client.login(auth.token);
 
 client.on("ready", ()=>{
     console.log(`Bot is ready! ${client.user.username}`);
