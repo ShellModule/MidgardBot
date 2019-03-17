@@ -35,7 +35,7 @@ module.exports = {apiExport: api}
 
 const getStatusURL = (ip, port) => `https://api.soldat.pl/v0/server/${ip}/${port}`;
 const getPlayersURL = (ip, port) => `https://api.soldat.pl/v0/server/${ip}/${port}/players`;
-const channelStatus = `543448415091032065`;
+const channelStatus = `537011480973934592`;
 
 var serversInfo;
 var playersInfo;
