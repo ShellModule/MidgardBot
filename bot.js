@@ -78,7 +78,6 @@ client.on('message', async message => {
   const args = messageArray.slice(1)
 
   if (!command.startsWith(prefix)) return
-  if (command === '!server') return console.log('spierdalaj :)')
 
   let cmd = client.commands.get(command.slice(prefix.length))
   if (cmd) cmd.run(client, message, args)
