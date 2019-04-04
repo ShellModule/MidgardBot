@@ -1,6 +1,6 @@
 const Discord = require('discord.js')
 const fs = require('fs')
-const channel1v1 = `546699178760208431`
+const options = require('../options.json')
 var queue = [':bust_in_silhouette:', ':bust_in_silhouette:']
 var players = []
 var fOs = 0
@@ -117,8 +117,8 @@ function check (client, message) {
 }
 
 function warr (message) {
-  if (message.channel.id !== channel1v1) {
-    message.channel.send(`This command can only be used in <#${channel1v1}> channel`)
+  if (message.channel.id !== options.versusChannel) {
+    message.channel.send(`This command can only be used in <#${options.versusChannel}> channel`)
     return 0
   } else return 1
 }

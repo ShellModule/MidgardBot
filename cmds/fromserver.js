@@ -1,13 +1,12 @@
 const net = require('net')
-const fs = require('fs')
 const data = require('../passwords.json')
+const options = require('../options.json')
 const sockets = [ new net.Socket(), new net.Socket(), new net.Socket(), new net.Socket(), new net.Socket() ]
 
 module.exports.run = async (client, message, args) => {
-  var count = 0
-  for (var i in data) {
-    connect(sockets[count], data[i], client)
-    count++
+  var temp = [ data.versus, data.ctf, data.runmode, data.climb, data.zrpg ]
+  for (var i in temp) {
+    connect(sockets[i], temp[i], client)
   }
   console.log('!msg from server: ACTIVE')
 }
@@ -18,34 +17,31 @@ function connect (socket, info, client) {
 }
 
 async function events (socket, info, client) {
-  var global = await fs.readFileSync(`msg/from${info.name2}.txt`, 'utf8')
+  var messageId = 'cyrtf6g786tyr45r68futluf6t765dI^R^*T&6ftrxityg;p68'
   var first = true
-
+  var toSend = ''
   socket.on('connect', () => {
     socket.write(`STARTFILES\r\nmaps/discord.pms\r\nENDFILES`)
   })
 
   socket.on('data', (data) => {
-    if (data.toString().includes(global)) {
-      console.log('poprzednia wiadomosc terminowana' + info.name + global)
-      first = false
-      socket.end()
-    } else {
-      if (data.toString().includes('discord.pms')) {
-        console.log(info.name + global)
-        let temp = StrCut(data.toString(), 'maps/discord.pms', 0).split('\n')
-        global = temp[1]
-        console.log(temp[2])
-        if (!first) client.channels.get(`542063413677916162`).send('`' + info.name + ':` ' + temp[2])
+    toSend = toSend + data.toString()
+    if (toSend.includes('ENDFILES')) {
+      if (toSend.includes(messageId)) {
+        first = false
+        toSend = ''
+      } else {
+        toSend = toSend.split('\n')
+        messageId = toSend[2]
+        if (!first) client.channels.get(options.msgsFromServers).send('`' + info.name + ':` ' + toSend[3])
         else first = false
+        toSend = ''
       }
+      socket.end()
     }
   })
 
   socket.on('end', async () => {
-    await fs.writeFile(`msg/from${info.name2}.txt`, global, (err) => {
-      if (err) console.log(err + '\nwystapil blad w zapisywaniu do pliku')
-    })
     setTimeout(() => { socket.connect(info.port + 10, info.ip) }, 1000)
   })
 

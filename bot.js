@@ -3,10 +3,11 @@ const Discord = require('discord.js')
 const net = require('net')
 const snekfetch = require('snekfetch')
 const auth = require('./auth.json')
+const api = require('./passwords.json')
+const options = require('./options.json')
 const fs = require('fs')
-const prefix = '!'
+const prefix = options.prefix
 const client = new Discord.Client()
-
 client.commands = new Discord.Collection()
 
 fs.readdir('./cmds/', (err, files) => {
@@ -25,20 +26,8 @@ fs.readdir('./cmds/', (err, files) => {
   })
 })
 
-const api = [
-  { name: 'Midgard [1v1]', ip: '51.68.213.93', port: '23081', flag: ':flag_gb:', skrot: '1v1' },
-  { name: 'Midgard [CTF]', ip: '188.166.44.152', port: '23073', flag: ':flag_nl:', skrot: 'ctf' },
-  { name: 'Midgard [Final Bout]', ip: '162.221.187.210', port: '25020', flag: ':flag_us:', skrot: 'finalbout' },
-  { name: 'Midgard [HTF]', ip: '162.221.187.210', port: '25000', flag: ':flag_us:', skrot: 'htf' },
-  { name: 'Midgard [Run Mode]', ip: '51.68.213.93', port: '23080', flag: ':flag_gb:', skrot: 'runmode' },
-  { name: 'Midgard [Climb]', ip: '51.68.213.93', port: '23082', flag: ':flag_gb:', skrot: 'climb' },
-  { name: 'Midgard [AlphaZRPG]', ip: '51.68.213.93', port: '23083', flag: ':flag_gb:', skrot: 'zrpg' }
-]
-module.exports = { apiExport: api }
-
 const getStatusURL = (ip, port) => `https://api.soldat.pl/v0/server/${ip}/${port}`
 const getPlayersURL = (ip, port) => `https://api.soldat.pl/v0/server/${ip}/${port}/players`
-const channelStatus = `543448415091032065`
 const types = [ 'name', 'kills', 'deaths', 'team' ]
 
 var serversInfo
@@ -47,6 +36,8 @@ var playersInfo
 client.on('ready', () => {
   console.log(`Bot is ready! ${client.user.username} ` + new Date())
   client.user.setActivity('!cmdhelp for help', { type: 'PLAYING' })
+  let cmd = client.commands.get('server')
+  if (cmd) cmd.run(client, '', '')
   update()
   setInterval(update, 60000)
 })
@@ -78,10 +69,46 @@ client.on('message', async message => {
   const args = messageArray.slice(1)
 
   if (!command.startsWith(prefix)) return
-
+  if (command === 'server') return
   let cmd = client.commands.get(command.slice(prefix.length))
   if (cmd) cmd.run(client, message, args)
 })
+
+async function update () {
+  let fetched = await client.channels.get(options.statusChannel).fetchMessages({ limit: 10 })
+  client.channels.get(options.statusChannel).bulkDelete(fetched)
+  start()
+}
+
+function start () {
+  let embed = new Discord.RichEmbed()
+    .setAuthor(client.user.username, client.user.avatarURL)
+    .setColor(Math.floor(Math.random() * 16777214) + 1)
+
+  var sock = new net.Socket()
+
+  sock.connect(parseInt(api.ctf.port, 10) + 10, api.ctf.ip)
+
+  sock.on('connect', () => {
+    sock.write('STARTFILES\r\nlogs/gamestat.txt\r\nENDFILES\r\n')
+  })
+
+  sock.on('data', (data) => {
+    if (data.length > 12) {
+      var temp = StrCut(data.toString(), 'Players', 0)
+      status(temp.split('\n'), embed, api.ctf.name)
+    }
+    if (data.toString().includes('ENDFILES')) {
+      sock.destroy()
+    }
+  })
+
+  sock.on('error', () => {
+    console.log('Midgard [CTF] is unavailable')
+    status('', embed, '')
+    sock.destroy()
+  })
+}
 
 async function status (data, embed, ava) {
   for (var i in api) {
@@ -100,7 +127,7 @@ async function status (data, embed, ava) {
       }
 
       embed.addField(
-        api[i].flag + '**' + api[i].name + '**',
+        api[i].flag + '**' + api[i].name2 + '**',
         '**Address**: ' + `<soldat://${api[i].ip}:${api[i].port}>\n` +
       (serversInfo[0] > 0 ? ':fire: ' : '') + '**Players:** `' + (serversInfo[0] === 'N/A' ? 'N/A' : serversInfo[0] + '/' + serversInfo[1]) + '`<:crouch:533700465670619197> ' +
       '**Map:** `' + serversInfo[2] + '`:map:\n' +
@@ -110,49 +137,13 @@ async function status (data, embed, ava) {
   }
   embed.setTimestamp(new Date())
 
-  client.channels.get(`${channelStatus}`).send(embed)
+  client.channels.get(options.statusChannel).send(embed)
 }
 
 async function getData (url) {
   return snekfetch.get(url).then(t => {
     return t.body
   })
-}
-
-function start () {
-  let embed = new Discord.RichEmbed()
-    .setAuthor(client.user.username, client.user.avatarURL)
-    .setColor(Math.floor(Math.random() * 16777214) + 1)
-
-  var sock = new net.Socket()
-
-  sock.connect(parseInt(api[1].port, 10) + 10, api[1].ip)
-
-  sock.on('connect', () => {
-    sock.write('STARTFILES\r\nlogs/gamestat.txt\r\nENDFILES\r\n')
-  })
-
-  sock.on('data', (data) => {
-    if (data.length > 12) {
-      var temp = StrCut(data.toString(), 'Players', 0)
-      status(temp.split('\n'), embed, api[1].name)
-    }
-    if (data.toString().includes('ENDFILES')) {
-      sock.destroy()
-    }
-  })
-
-  sock.on('error', () => {
-    console.log('Midgard [CTF] is unavailable')
-    status('', embed, '')
-    sock.destroy()
-  })
-}
-
-async function update () {
-  let fetched = await client.channels.get(`${channelStatus}`).fetchMessages({ limit: 10 })
-  client.channels.get(`${channelStatus}`).bulkDelete(fetched)
-  start()
 }
 
 function main (data, embed) {
@@ -177,7 +168,7 @@ function main (data, embed) {
   }
   embedF
     .addField(
-      api[1].flag + `**${api[1].name}**`, '**Address:** ' + `<soldat://${api[1].ip}:${api[1].port}>\n` +
+      api.ctf.flag + `**${api.ctf.name2}**`, '**Address:** ' + `<soldat://${api.ctf.ip}:${api.ctf.port}>\n` +
       (gamestat.PlayersNum > 0 ? ':fire: ' : '') + '**Players:** `' + gamestat.PlayersNum + '/14`<:crouch:533700465670619197> ' +
       '**Map:** `' + gamestat.Map + '`:map:\n' +
       '**Timeleft:** ' + '`' + gamestat.Timeleft + '`:alarm_clock: ' +
