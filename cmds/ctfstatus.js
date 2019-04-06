@@ -1,8 +1,7 @@
 /* eslint-disable eqeqeq */
 const Discord = require('discord.js')
 const net = require('net')
-const PORT = 23073
-const HOST = '188.166.44.152'
+const data = require('../passwords.json')
 const types = [ 'name', 'kills', 'deaths', 'team' ]
 
 class Dane {
@@ -41,7 +40,7 @@ class Dane {
 module.exports.run = async (client, message, args) => {
   var sock = new net.Socket()
 
-  sock.connect(PORT + 10, HOST)
+  sock.connect(data.ctf.port + 10, data.ctf.ip)
 
   sock.on('connect', async () => {
     sock.write('STARTFILES\r\nlogs/gamestat.txt\r\nENDFILES\r\n')
@@ -85,7 +84,7 @@ function main (data, message) {
   var Deadliest = bestKDRatio(gamestat.PlayersInfo)
   let embed = new Discord.RichEmbed()
     .setColor(Math.floor(Math.random() * 16777214) + 1)
-    .setTitle(':flag_nl:' + '**Midgard [CTF]**')
+    .setTitle(data.ctf.flag + `**${data.ctf.name2}**`)
     .addField(':map:' + '**Map**', '**`' + gamestat.Map + '`**', true)
     .addField(':alarm_clock:' + '**Timeleft**', '**`' + gamestat.Timeleft + '`**', true)
   if (Spec != '') {
