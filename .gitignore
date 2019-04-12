@@ -33,6 +33,8 @@ bower_components
 build/Release
 
 # Dependency directories
+auth.json
+options.json
 node_modules/
 jspm_packages/
 auth.json
@@ -59,3 +61,4 @@ typings/
 
 # next.js build output
 .next
+options.json
