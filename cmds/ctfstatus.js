@@ -1,7 +1,7 @@
 /* eslint-disable eqeqeq */
 const Discord = require('discord.js')
 const net = require('net')
-const data = require('../passwords.json')
+const api = require('../passwords.json')
 const types = [ 'name', 'kills', 'deaths', 'team' ]
 
 class Dane {
@@ -39,9 +39,18 @@ class Dane {
 
 module.exports.run = async (client, message, args) => {
   var sock = new net.Socket()
-
-  sock.connect(data.ctf.port + 10, data.ctf.ip)
-
+  if (!args[0]) {
+    return message.channel.send(
+      '**`!status ctf`** - *detailed information on **Midgard [CTF]** server*\n' +
+      '**`!status ls`** - *detailed information on **(WM)Last Stand** server*\n'
+    )
+  } else if (args[0] === 'ctf') {
+    sock.connect(api.ctf.port + 10, api.ctf.ip)
+  } else if (args[0] === 'ls') {
+    sock.connect(api.ls.port + 10, api.ls.ip)
+  } else {
+    return message.channel.send('Try **`!status`**')
+  }
   sock.on('connect', async () => {
     sock.write('STARTFILES\r\nlogs/gamestat.txt\r\nENDFILES\r\n')
   })
@@ -49,7 +58,7 @@ module.exports.run = async (client, message, args) => {
   sock.on('data', (data) => {
     if (data.length > 12) {
       var temp = StrCut(data.toString(), 'Players', 0)
-      main(temp.split('\n'), message)
+      main(temp.split('\n'), message, args)
     }
     if (data.toString().includes('ENDFILES')) {
       sock.destroy()
@@ -62,12 +71,15 @@ module.exports.run = async (client, message, args) => {
   })
 }
 
-function main (data, message) {
+function main (data, message, args) {
   const gamestat = new Dane(data)
 
+  var embed = new Discord.RichEmbed()
   var Alpha = ''
   var Bravo = ''
   var Spec = ''
+  var PlayerCounter = 0
+  var totalKills = 0
   var PlayersSorted = sortByKey(gamestat.PlayersInfo, 'kills')
   for (var i in PlayersSorted) {
     let toAdd = PlayersSorted[i].kills + '/' +
@@ -76,27 +88,48 @@ function main (data, message) {
     if (PlayersSorted[i].team === '1') {
       Alpha = Alpha + toAdd
     } else if (PlayersSorted[i].team === '2') {
+      totalKills += parseInt(PlayersSorted[i].kills, 10)
+      PlayerCounter++
       Bravo = Bravo + toAdd
     } else if (PlayersSorted[i].team === '5') {
+      PlayerCounter++
       Spec = Spec + StrCut(toAdd, ' ', 1)
     }
   }
   var Deadliest = bestKDRatio(gamestat.PlayersInfo)
-  let embed = new Discord.RichEmbed()
-    .setColor(Math.floor(Math.random() * 16777214) + 1)
-    .setTitle(data.ctf.flag + `**${data.ctf.name2}**`)
-    .addField(':map:' + '**Map**', '**`' + gamestat.Map + '`**', true)
-    .addField(':alarm_clock:' + '**Timeleft**', '**`' + gamestat.Timeleft + '`**', true)
-  if (Spec != '') {
-    embed.addField(':flag_black:' + '**Spectators**', (Spec != '' ? '```\n' + Spec + '\n```' : 'Spectators are empty!'))
+  if (args[0] == 'ctf') {
+    embed
+      .setColor(Math.floor(Math.random() * 16777214) + 1)
+      .setTitle(`${api.ctf.flag}` + `**${api.ctf.name2}**`)
+      .addField(':map:' + '**Map**', '**`' + gamestat.Map + '`**', true)
+      .addField(':alarm_clock:' + '**Timeleft**', '**`' + gamestat.Timeleft + '`**', true)
+    embed
+      .addField(':checkered_flag:' + '**Score**', '**`' + gamestat.Alpha + ' : ' + gamestat.Bravo + '`**')
+      .addField('<:redflag:533700464856924181>' + '**Alpha**', (Alpha != '' ? '```\n' + Alpha + '\n```' : '**`Alpha is empty!`**'), true)
+      .addField('<:blueflag:533700465142267905>' + '**Bravo**', (Bravo != '' ? '```\n' + Bravo + '\n```' : '**`Bravo is empty!`**'), true)
+      .setTimestamp(new Date())
+    if (Spec != '') {
+      embed.addField(':flag_black:' + '**Spectators**', (Spec != '' ? '```\n' + Spec + '\n```' : 'Spectators are empty!'))
+    }
+    if (gamestat.PlayersNum >= 2 && gamestat.KiDe != 0) {
+      embed.addField('<:crouch:533700465670619197>**Deadliest**', `<:uszanowanko:533764245339373588>` + Deadliest.Player)
+    }
   }
-  embed
-    .addField(':checkered_flag:' + '**Score**', '**`' + gamestat.Alpha + ' : ' + gamestat.Bravo + '`**')
-    .addField('<:redflag:533700464856924181>' + '**Alpha**', (Alpha != '' ? '```\n' + Alpha + '\n```' : '**`Alpha is empty!`**'), true)
-    .addField('<:blueflag:533700465142267905>' + '**Bravo**', (Bravo != '' ? '```\n' + Bravo + '\n```' : '**`Bravo is empty!`**'), true)
-    .setTimestamp(new Date())
-  if (gamestat.PlayersNum >= 2 && gamestat.KiDe != 0) {
-    embed.addField('<:crouch:533700465670619197>**Deadliest**', `<:uszanowanko:533764245339373588>` + Deadliest.Player)
+  if (args[0] == 'ls') {
+    embed
+      .setColor(Math.floor(Math.random() * 16777214) + 1)
+      .setTitle(`${api.ls.flag}` + `**${api.ls.name2}**`)
+      .addField(':map:' + '**Map**', '**`' + gamestat.Map + '`**', true)
+      .addField(':alarm_clock:' + '**Timeleft**', '**`' + gamestat.Timeleft + '`**', true)
+      .addField(':crossed_swords:**Total kills**', '**`' + totalKills + '`**')
+      .addField('<:blueflag:533700465142267905>' + '**Survivors**', (Bravo != '' ? '```\n' + Bravo + '\n```' : '**`No survivors!`**'), true)
+      .setTimestamp(new Date())
+    if (Spec != '') {
+      embed.addField(':flag_black:' + '**Spectators**', (Spec != '' ? '```\n' + Spec + '\n```' : 'Spectators are empty!'))
+    }
+    if (PlayerCounter >= 1 && gamestat.KiDe != 0) {
+      embed.addField('<:crouch:533700465670619197>**Deadliest**', `<:uszanowanko:533764245339373588>` + Deadliest.Player)
+    }
   }
   message.channel.send(embed)
 }
@@ -126,5 +159,5 @@ function StrCut (str, deli, offset) {
   return str.slice(pos + offset, str.length)
 }
 module.exports.help = {
-  name: 'ctfstatus'
+  name: 'status'
 }

@@ -1,5 +1,5 @@
-const roles = ['CTF Player', '1v1 Player', 'Climb/RunMode Player']
-const rolesCMD = ['ctf', '1v1', 'climb/runmode']
+const roles = ['CTF Player', '1v1 Player', 'Climb/RunMode Player', 'LS Player']
+const rolesCMD = ['ctf', '1v1', 'climb/runmode', 'ls']
 
 module.exports.run = async (client, message, args) => {
   let rMember = message.member
