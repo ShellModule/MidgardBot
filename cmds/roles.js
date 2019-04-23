@@ -1,14 +1,5 @@
-const roles = ['CTF Player', '1v1 Player', 'Climb/RunMode Player', 'LS Player']
-const rolesCMD = ['ctf', '1v1', 'climb/runmode', 'ls']
-
 module.exports.run = async (client, message) => {
-  let toAdd = 'To add a role, type:\n'
-  let toRem = 'To remove a role, type:\n'
-  for (var i in roles) {
-    toAdd = toAdd + '**`!addrole ' + `${rolesCMD[i]}` + '`** - ' + `**${roles[i]}**\n`
-    toRem = toRem + '**`!removerole ' + `${rolesCMD[i]}` + '`** - ' + `**${roles[i]}**\n`
-  }
-  message.channel.send(toAdd + toRem)
+  message.channel.send('Check out this channel <#570313265855463454>')
 }
 
 module.exports.help = {

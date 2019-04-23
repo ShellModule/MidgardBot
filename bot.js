@@ -38,6 +38,7 @@ client.on('ready', () => {
   client.user.setActivity('!cmdhelp for help', { type: 'PLAYING' })
   // let cmd = client.commands.get('server')
   // if (cmd) cmd.run(client, '', '')
+  client.commands.get('reactroles').run(client, '', '')
   update()
   setInterval(update, 60000)
 })
@@ -63,7 +64,6 @@ client.on('guildMemberAdd', (guildMember) => {
 
 client.on('message', async message => {
   if (message.channel.type === 'dm') return
-
   const messageArray = message.content.split(' ')
   const command = messageArray[0]
   const args = messageArray.slice(1)

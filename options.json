@@ -2,5 +2,6 @@
     "prefix": "!",
     "statusChannel": "",
     "msgsFromServers": "",
-    "versusChannel": ""
+    "versusChannel": "",
+    "rolesMessage": ""
 }
