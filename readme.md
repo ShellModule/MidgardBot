@@ -1,2 +1,2 @@
 # Discord bot
-for this [discord community](https://discord.gg/Jr8CFQu)
+for [Midgard Soldat](https://discord.gg/Jr8CFQu) community
