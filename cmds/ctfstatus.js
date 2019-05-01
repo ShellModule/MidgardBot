@@ -42,12 +42,15 @@ module.exports.run = async (client, message, args) => {
   if (!args[0]) {
     return message.channel.send(
       '**`!status ctf`** - *detailed information on **Midgard [CTF]** server*\n' +
+      '**`!status os`** - *detailed information on **Midgard [OneShots]** server*\n' +
       '**`!status ls`** - *detailed information on **(WM)Last Stand** server*\n'
     )
   } else if (args[0] === 'ctf') {
     sock.connect(api.ctf.port + 10, api.ctf.ip)
   } else if (args[0] === 'ls') {
     sock.connect(api.ls.port + 10, api.ls.ip)
+  } else if (args[0] === 'os') {
+    sock.connect(api.os.port + 10, api.os.ip)
   } else {
     return message.channel.send('Try **`!status`**')
   }
@@ -101,6 +104,24 @@ function main (data, message, args) {
     embed
       .setColor(Math.floor(Math.random() * 16777214) + 1)
       .setTitle(`${api.ctf.flag}` + `**${api.ctf.name2}**`)
+      .addField(':map:' + '**Map**', '**`' + gamestat.Map + '`**', true)
+      .addField(':alarm_clock:' + '**Timeleft**', '**`' + gamestat.Timeleft + '`**', true)
+    embed
+      .addField(':checkered_flag:' + '**Score**', '**`' + gamestat.Alpha + ' : ' + gamestat.Bravo + '`**')
+      .addField('<:redflag:533700464856924181>' + '**Alpha**', (Alpha != '' ? '```\n' + Alpha + '\n```' : '**`Alpha is empty!`**'), true)
+      .addField('<:blueflag:533700465142267905>' + '**Bravo**', (Bravo != '' ? '```\n' + Bravo + '\n```' : '**`Bravo is empty!`**'), true)
+      .setTimestamp(new Date())
+    if (Spec != '') {
+      embed.addField(':flag_black:' + '**Spectators**', (Spec != '' ? '```\n' + Spec + '\n```' : 'Spectators are empty!'))
+    }
+    if (gamestat.PlayersNum >= 2 && gamestat.KiDe != 0) {
+      embed.addField('<:crouch:533700465670619197>**Deadliest**', `<:uszanowanko:533764245339373588>` + Deadliest.Player)
+    }
+  }
+  if (args[0] == 'os') {
+    embed
+      .setColor(Math.floor(Math.random() * 16777214) + 1)
+      .setTitle(`${api.os.flag}` + `**${api.os.name2}**`)
       .addField(':map:' + '**Map**', '**`' + gamestat.Map + '`**', true)
       .addField(':alarm_clock:' + '**Timeleft**', '**`' + gamestat.Timeleft + '`**', true)
     embed

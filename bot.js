@@ -36,9 +36,8 @@ var playersInfo
 client.on('ready', () => {
   console.log(`Bot is ready! ${client.user.username} ` + new Date())
   client.user.setActivity('!cmdhelp for help', { type: 'PLAYING' })
-  // let cmd = client.commands.get('server')
-  // if (cmd) cmd.run(client, '', '')
   client.commands.get('reactroles').run(client, '', '')
+
   update()
   setInterval(update, 60000)
 })
@@ -196,7 +195,7 @@ function main (data, embed, server) {
       Spec = Spec + StrCut(toAdd, ' ', 1)
     }
   }
-  if (server.name === '[CTF]') {
+  if (server.name === 'ctf') {
     embedF
       .addField(
         server.flag + `**${server.name2}**`, '**Address:** ' + `<soldat://${server.ip}:${server.port}>\n` +
@@ -214,7 +213,7 @@ function main (data, embed, server) {
       }
     }
   }
-  if (server.name === '[LS]') {
+  if (server.name === 'ls') {
     embedF
       .addField(
         server.flag + `**${server.name2}**`, '**Address:** ' + `<soldat://${server.ip}:${server.port}>\n` +
