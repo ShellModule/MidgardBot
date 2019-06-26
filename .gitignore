@@ -37,6 +37,7 @@ auth.json
 options.json
 node_modules/
 jspm_packages/
+passwords.json
 auth.json
 # TypeScript v1 declaration files
 typings/
