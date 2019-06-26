@@ -1,3 +1,4 @@
+/* eslint-disable eqeqeq */
 const Discord = require('discord.js')
 const wiadomosc = '570335886546305054'
 

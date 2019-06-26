@@ -42,7 +42,7 @@ module.exports.run = async (client, message, args) => {
   if (!args[0]) {
     return message.channel.send(
       '**`!status ctf`** - *detailed information on **Midgard [CTF]** server*\n' +
-      '**`!status os`** - *detailed information on **Midgard [OneShots]** server*\n' +
+      '**`!status os`** - *detailed information on **Midgard [OneShots]** server*\n' + 
       '**`!status ls`** - *detailed information on **(WM)Last Stand** server*\n'
     )
   } else if (args[0] === 'ctf') {
@@ -72,6 +72,12 @@ module.exports.run = async (client, message, args) => {
     message.channel.send('**Midgard [CTF]** is unavailable <:PepeHands:533754872785534999>')
     sock.destroy()
   })
+
+  sock.on('end', () => {
+    if (sock.bytesRead == 0){
+      message.channel.send('**Midgard [CTF]** is unavailable <:PepeHands:533754872785534999>')
+    }
+  })
 }
 
 function main (data, message, args) {
@@ -82,7 +88,7 @@ function main (data, message, args) {
   var Bravo = ''
   var Spec = ''
   var PlayerCounter = 0
-  var totalKills = 0
+  var totalKills = 0;
   var PlayersSorted = sortByKey(gamestat.PlayersInfo, 'kills')
   for (var i in PlayersSorted) {
     let toAdd = PlayersSorted[i].kills + '/' +
