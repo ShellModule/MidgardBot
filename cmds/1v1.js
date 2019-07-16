@@ -3,10 +3,8 @@ const snekfetch = require("snekfetch");
 const fs = require("fs");
 const options = require("../options.json");
 const net = require("net");
-const PORT = 23074;
-const IP = "51.75.74.225";
-const serverAddress = `soldat://${IP}:${PORT}`;
-const serverURL = `https://api.soldat.pl/v0/server/${IP}/${PORT}`;
+const serverAddress = `soldat://${options.private1v1.ip}:${options.private1v1.port}`;
+const serverURL = `https://api.soldat.pl/v0/server/${options.private1v1.ip}/${options.private1v1.port}`;
 const gameTime = 2400000;
 const timeToTick = 180000;
 var queue = [":bust_in_silhouette:", ":bust_in_silhouette:"];
@@ -32,7 +30,7 @@ module.exports.run = async (client, message, args) => {
     if (ServerInfo.NumPlayers > 0) {
       return message.channel.send("Someone is already playing on the server!");
     }
-    if (PLAYER.presence.status !== "online") {
+    if (PLAYER.presence.status !== "online" && PLAYER.presence.status !== "idle" ) {
       return message.channel.send(
         "You must be **Online** to use this command!"
       );
@@ -65,7 +63,7 @@ module.exports.run = async (client, message, args) => {
       queue = shuffle(queue);
       let socket = new net.Socket();
       let newPassword = makeid(4);
-      await socket.connect(PORT, IP);
+      await socket.connect(options.private1v1.port, options.private1v1.ip);
       socket.on("connect", () => {
         socket.write(options.vsPassword + "\r\n");
         if (!display) {
@@ -74,6 +72,7 @@ module.exports.run = async (client, message, args) => {
             clearTimeout(kickInt);
             socket.write(`/kick 1\r\n`);
             socket.write(`/kick 2\r\n`);
+			socket.write(`/kick 3\r\n`);
             game = false;
           }
         } else {
@@ -94,7 +93,7 @@ module.exports.run = async (client, message, args) => {
       for (var i in players) {
         let embed = new Discord.RichEmbed()
           .setColor(Math.floor(Math.random() * 16777214) + 1)
-          .setTitle(":vs: 1v1 match")
+          .setTitle(":vs: 1v1 match _(You have 40 minutes to play your match)_")
           .addField(
             "**Server info**",
             `<${serverAddress}` + `/${newPassword}>`,
@@ -109,16 +108,15 @@ module.exports.run = async (client, message, args) => {
       fOs = 0;
       players = [];
       timeInt = setInterval(async () => {
-        timeToDisplay = timeToDisplay - 1;
-        console.log(timeToDisplay);
+        timeToDisplay = timeToDisplay - 3;
         display = true;
-        await socket.connect(PORT, IP);
+        await socket.connect(options.private1v1.port, options.private1v1.ip);
       }, timeToTick);
       kickInt = setTimeout(async () => {
         clearInterval(timeInt);
         game = true;
         newPassword = makeid(4);
-        await socket.connect(PORT, IP);
+        await socket.connect(options.private1v1.port, options.private1v1.ip);
       }, gameTime);
     } else fOs++;
     return;
@@ -157,6 +155,7 @@ module.exports.run = async (client, message, args) => {
       "`!1v1 add` - to enter queue\n" +
       "`!1v1 del` - to leave queue\n" +
       "`!1v1 status` - to show current queue\n" +
+      "You have 40 minutes to play your match.\n"+
       "_Please note, any user who will change his **status**, will be deleted from the queue automatically._"
   );
 };
@@ -168,7 +167,7 @@ module.exports.help = {
 function check(client, message) {
   if (players.length === 1) {
     let status = client.users.get(players[0]).presence.status;
-    if (status !== "online") {
+    if (status !== "online" && status !== "idle") {
       clearInterval(checkInt);
       message.channel.send(
         `Player ${queue[0]} went **${status}** and was removed from the queue`

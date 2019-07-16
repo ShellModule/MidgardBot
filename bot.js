@@ -1,4 +1,3 @@
-/* eslint-disable eqeqeq */
 const Discord = require("discord.js");
 const net = require("net");
 const snekfetch = require("snekfetch");
@@ -40,8 +39,18 @@ client.on("ready", () => {
   client.user.setActivity("!cmdhelp for help", { type: "PLAYING" });
   client.commands.get("reactroles").run(client, "", "");
 
-  update();
-  setInterval(update, 60000);
+  if(options.msgserver) {
+    client.commands.get("msgserver").run(client, "", "");
+  } else {
+      console.log("Messages from server are disabled!");
+  }
+
+  if(options.status) {
+    update();
+    setInterval(update, 60000);
+  } else {
+      console.log("Status is disabled!");
+  }
 });
 
 client.on("guildMemberAdd", guildMember => {
@@ -61,7 +70,7 @@ client.on("guildMemberAdd", guildMember => {
       "  **`!1v1`** - *1v1 matchmaking*\n" +
       "  **`!status`** - *detailed information on some servers*\n" +
       "  **`!cmdhelp`** - *to show our commands at any time*\n" +
-      //  '  **`!msg help`** - *how to send a message to our servers*\n' +
+      // "  **`!msg help`** - *how to send a message to our servers*\n" +
       "\n***MIDGARD SERVERS***\n<#537011480973934592>\n\n" +
       "You can also check <#533697790187012098> for more information"
   );
@@ -159,47 +168,47 @@ async function status(dataCTF, dataLS, embed, avaCTF, avaLS) {
       embed = main(dataCTF, embed, api[i]);
     } else if (api[i].name === avaLS) {
       embed = main(dataLS, embed, api[i]);
-    } else {
-      try {
-        serversInfo = await getData(getStatusURL(api[i].ip, api[i].port));
-      } catch (e) {
-        serversInfo = ["N/A", "N/A", "N/A"];
-        playersInfo = "N/A";
-      }
-      if (serversInfo[0] !== "N/A") {
-        serversInfo = [
-          serversInfo.NumPlayers,
-          serversInfo.MaxPlayers,
-          serversInfo.CurrentMap
-        ];
-        playersInfo = await getData(getPlayersURL(api[i].ip, api[i].port));
-      }
-      embed.addField(
-        api[i].flag + "**" + api[i].name2 + "**",
-        "**Address**: " +
-          `<soldat://${api[i].ip}:${api[i].port}>\n` +
-          (serversInfo[0] > 0 ? ":fire: " : "") +
-          "**Players:** `" +
-          (serversInfo[0] === "N/A"
-            ? "N/A"
-            : serversInfo[0] + "/" + serversInfo[1]) +
-          "`<:crouch:533700465670619197> " +
-          "**Map:** `" +
-          serversInfo[2] +
-          "`:map:\n" +
-          (playersInfo === "N/A"
-            ? ""
-            : playersInfo.Players.filter(v => {
-                return v !== "Zombie";
-              }) != ""
-            ? "```\n" +
-              playersInfo.Players.filter(v => {
-                return v !== "Zombie";
-              }).join("  |  ") +
-              "\n```"
-            : "")
-      );
-    }
+    } //else {
+    //   try {
+    //     serversInfo = await getData(getStatusURL(api[i].ip, api[i].port));
+    //   } catch (e) {
+    //     serversInfo = ["N/A", "N/A", "N/A"];
+    //     playersInfo = "N/A";
+    //   }
+    //   if (serversInfo[0] !== "N/A") {
+    //     serversInfo = [
+    //       serversInfo.NumPlayers,
+    //       serversInfo.MaxPlayers,
+    //       serversInfo.CurrentMap
+    //     ];
+    //     playersInfo = await getData(getPlayersURL(api[i].ip, api[i].port));
+    //   }
+    //   embed.addField(
+    //     api[i].flag + "**" + api[i].name2 + "**",
+    //     "**Address**: " +
+    //       `<soldat://${api[i].ip}:${api[i].port}>\n` +
+    //       (serversInfo[0] > 0 ? ":fire: " : "") +
+    //       "**Players:** `" +
+    //       (serversInfo[0] === "N/A"
+    //         ? "N/A"
+    //         : serversInfo[0] + "/" + serversInfo[1]) +
+    //       "`<:crouch:533700465670619197> " +
+    //       "**Map:** `" +
+    //       serversInfo[2] +
+    //       "`:map:\n" +
+    //       (playersInfo === "N/A"
+    //         ? ""
+    //         : playersInfo.Players.filter(v => {
+    //             return v !== "Zombie";
+    //           }) != ""
+    //         ? "```\n" +
+    //           playersInfo.Players.filter(v => {
+    //             return v !== "Zombie";
+    //           }).join("  |  ") +
+    //           "\n```"
+    //         : "")
+    //   );
+    // }
   }
   embed.setTimestamp(new Date());
 

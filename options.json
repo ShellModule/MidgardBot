@@ -1,7 +1,15 @@
 {
     "prefix": "!",
-    "statusChannel": "",
-    "msgsFromServers": "",
-    "versusChannel": "",
-    "vsPassword": ""
+    "status": true,
+    "msgserver": false,
+    "statusChannel": "537011480973934592",
+    "msgsFromServers": "542063413677916162",
+    "versusChannel": "546699178760208431",
+    "vsPassword": "",
+    "private1v1": {
+        "name": "Private Midgard [1v1]",
+        "flag": ":flag_de:",
+        "ip": "51.75.74.225",
+        "port": 23074
+    }
 }
