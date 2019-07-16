@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
 const net = require("net");
 const auth = require("./auth.json");
-const serverData = require("./serverData.json");
+const serversData = require("./serversData.json");
 const options = require("./options.json");
 const fs = require("fs");
 const prefix = options.prefix;
@@ -25,8 +25,8 @@ fs.readdir("./cmds/", (err, files) => {
   });
 });
 
-for (var i in serverData) {
-  servers.push(serverData[i].shortName);
+for (var i in serversData) {
+  servers.push(serversData[i].shortName);
 }
 const types = ["name", "kills", "deaths", "team"];
 
@@ -94,7 +94,7 @@ function startUpdate() {
 async function getData(embed, server) {
   var socket = new net.Socket();
   var dataFromServer = "";
-  socket.connect(serverData[servers[server]].port + 10, serverData[servers[server]].ip);
+  socket.connect(serversData[servers[server]].port + 10, serversData[servers[server]].ip);
 
   socket.on("connect", () => {
     socket.write("STARTFILES\r\nlogs/gamestat.txt\r\nENDFILES\r\n");
@@ -109,7 +109,7 @@ async function getData(embed, server) {
   });
 
   socket.on("error", () => {
-    console.log(`${serverData[servers[server]].fullName} is unavailable`);
+    console.log(`${serversData[servers[server]].fullName} is unavailable`);
     parseData(embed, "", server);
     socket.destroy();
   });
@@ -120,7 +120,7 @@ async function parseData(embed, serverInformation, server) {
     serverInformation === "" ? "N/A" : new Dane(serverInformation.split("\n"));
   if (gamestat === "N/A") {
     embed.addField(
-      serverData[servers[server]].flag + `**${serverData[servers[server]].fullName}**`,
+      serversData[servers[server]].flag + `**${serversData[servers[server]].fullName}**`,
       ":x:**__Server is unavailable!__**:x:"
     );
   } else {
@@ -146,16 +146,16 @@ async function parseData(embed, serverInformation, server) {
         Spec = Spec + StrCut(toAdd, " ", 1);
       }
     }
-    if (serverData[servers[server]].shortName === "ctf") {
+    if (serversData[servers[server]].shortName === "ctf") {
       embed.addField(
-        serverData[servers[server]].flag + `**${serverData[servers[server]].fullName}**`,
+        serversData[servers[server]].flag + `**${serversData[servers[server]].fullName}**`,
         "**Address:** " +
-          `<soldat://${serverData[servers[server]].ip}:${
-            serverData[servers[server]].port
+          `<soldat://${serversData[servers[server]].ip}:${
+            serversData[servers[server]].port
           }>\n` +
           (gamestat.PlayersNum > 0 ? ":fire: " : "") +
           `**Players:** \`${gamestat.PlayersNum}/${
-            serverData[servers[server]].maxPlayers
+            serversData[servers[server]].maxPlayers
           }\` <:crouch:533700465670619197>` +
           `**Map:** \`${gamestat.Map}\`:map:\n` +
           `**Timeleft:** \`${gamestat.Timeleft}\`:alarm_clock:` +
@@ -180,16 +180,16 @@ async function parseData(embed, serverInformation, server) {
           );
         }
       }
-    } else if (serverData[servers[server]].shortName === "ls") {
+    } else if (serversData[servers[server]].shortName === "ls") {
       embed.addField(
-        serverData[servers[server]].flag + `**${serverData[servers[server]].fullName}**`,
+        serversData[servers[server]].flag + `**${serversData[servers[server]].fullName}**`,
         "**Address:** " +
-          `<soldat://${serverData[servers[server]].ip}:${
-            serverData[servers[server]].port
+          `<soldat://${serversData[servers[server]].ip}:${
+            serversData[servers[server]].port
           }>\n` +
           (gamestat.PlayersNum > 0 ? ":fire: " : "") +
           `**Players:** \`${gamestat.PlayersNum}/${
-            serverData[servers[server]].maxPlayers
+            serversData[servers[server]].maxPlayers
           }\` <:crouch:533700465670619197>` +
           `**Map:** \`${gamestat.Map}\`:map:\n`
       );
@@ -207,14 +207,14 @@ async function parseData(embed, serverInformation, server) {
       }
     } else {
       embed.addField(
-        serverData[servers[server]].flag + "**" + serverData[servers[server]].fullName + "**",
+        serversData[servers[server]].flag + "**" + serversData[servers[server]].fullName + "**",
         "**Address**: " +
-          `<soldat://${serverData[servers[server]].ip}:${
-            serverData[servers[server]].port
+          `<soldat://${serversData[servers[server]].ip}:${
+            serversData[servers[server]].port
           }>\n` +
           (gamestat.PlayersNum > 0 ? ":fire: " : "") +
           `**Players:** \`${gamestat.PlayersNum}/${
-            serverData[servers[server]].maxPlayers
+            serversData[servers[server]].maxPlayers
           }\`<:crouch:533700465670619197> ` +
           `**Map:** \`${gamestat.Map}\`:map:\n` +
           (players.filter(v => {

@@ -1,11 +1,11 @@
 const net = require('net')
-const serverData = require('../serverData.json')
+const serversData = require('../serversData.json')
 const options = require('../options.json')
 const sockets = [ new net.Socket(), new net.Socket() ]
 // const sockets = [ new net.Socket(), new net.Socket(), new net.Socket(), new net.Socket() ]
 
 module.exports.run = async (client, message, args) => {
-  var temp = [ serverData.ctf, serverData.ls ]
+  var temp = [ serversData.ctf, serversData.ls ]
   for (var i in temp) {
     connect(sockets[i], temp[i], client)
   }

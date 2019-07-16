@@ -1,6 +1,6 @@
 const Discord = require("discord.js");
 const net = require("net");
-const serverData = require("../serverData.json");
+const serversData = require("../serversData.json");
 const options = require("../options.json");
 const types = ["name", "kills", "deaths", "team"];
 
@@ -53,11 +53,11 @@ module.exports.run = async (client, message, args) => {
         "**`!status 1v1`** - *detailed information on a **private 1v1** server*\n"
     );
   } else if (args[0] === "ctf") {
-    sock.connect(serverData.ctf.port + 10, serverData.ctf.ip);
+    sock.connect(serversData.ctf.port + 10, serversData.ctf.ip);
   } else if (args[0] === "ls") {
-    sock.connect(serverData.ls.port + 10, serverData.ls.ip);
+    sock.connect(serversData.ls.port + 10, serversData.ls.ip);
   } else if (args[0] === "os") {
-    sock.connect(serverData.os.port + 10, serverData.os.ip);
+    sock.connect(serversData.os.port + 10, serversData.os.ip);
   } else if (args[0] === "1v1") {
     sock.connect(options.private1v1.port + 10, options.private1v1.ip);
   } else {
@@ -131,7 +131,7 @@ function main(data, message, args) {
   if (args[0] == "ctf") {
     embed
       .setColor(Math.floor(Math.random() * 16777214) + 1)
-      .setTitle(`${serverData.ctf.flag}` + `**${serverData.ctf.fullName}**`)
+      .setTitle(`${serversData.ctf.flag}` + `**${serversData.ctf.fullName}**`)
       .addField(":map:" + "**Map**", "**`" + gamestat.Map + "`**", true)
       .addField(
         ":alarm_clock:" + "**Timeleft**",
@@ -169,7 +169,7 @@ function main(data, message, args) {
   } else if (args[0] == "os") {
     embed
       .setColor(Math.floor(Math.random() * 16777214) + 1)
-      .setTitle(`${serverData.os.flag}` + `**${serverData.os.fullName}**`)
+      .setTitle(`${serversData.os.flag}` + `**${serversData.os.fullName}**`)
       .addField(":map:" + "**Map**", "**`" + gamestat.Map + "`**", true)
       .addField(
         ":alarm_clock:" + "**Timeleft**",
@@ -207,7 +207,7 @@ function main(data, message, args) {
   } else if (args[0] == "ls") {
     embed
       .setColor(Math.floor(Math.random() * 16777214) + 1)
-      .setTitle(`${serverData.ls.flag}` + `**${serverData.ls.fullName}**`)
+      .setTitle(`${serversData.ls.flag}` + `**${serversData.ls.fullName}**`)
       .addField(":map:" + "**Map**", "**`" + gamestat.Map + "`**", true)
       .addField(
         ":alarm_clock:" + "**Timeleft**",

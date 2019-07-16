@@ -1,5 +1,5 @@
 const net = require('net')
-const serverData = require('../serverserverData.json')
+const serversData = require('../serversData.json')
 const flood = []
 
 module.exports.run = async (client, message, args) => {
@@ -14,10 +14,10 @@ module.exports.run = async (client, message, args) => {
     )
     return
   }
-  for (var i in serverData) {
+  for (var i in serversData) {
     if (flood.indexOf(message.member.user.id) != -1) return message.channel.send('Antiflood')
-    if (args[0] === serverData[i].name) {
-      if (serverData[i].password === '') return message.channel.send('I cannot connect to the server')
+    if (args[0] === serversData[i].name) {
+      if (serversData[i].password === '') return message.channel.send('I cannot connect to the server')
       args = args.slice(1)
       if (!args[0]) return message.channel.send('You need to type in your message!')
       var sock = new net.Socket()
@@ -29,9 +29,9 @@ module.exports.run = async (client, message, args) => {
         toSend = StrCut(toSend,"\n",0);
       }
 
-      sock.connect(serverData[i].port, serverData[i].ip)
+      sock.connect(serversData[i].port, serversData[i].ip)
       sock.on('connect', () => {
-        sock.write(serverData[i].password + '\r\n')
+        sock.write(serversData[i].password + '\r\n')
         sock.write(`/say Discord[${message.member.user.username}] ${toSend}\r\n`)
         flood.push(message.member.user.id)
         setTimeout(() => sock.destroy(), 3000)
