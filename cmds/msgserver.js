@@ -1,11 +1,11 @@
 const net = require('net')
-const data = require('../passwords.json')
+const serverData = require('../serverData.json')
 const options = require('../options.json')
 const sockets = [ new net.Socket(), new net.Socket() ]
 // const sockets = [ new net.Socket(), new net.Socket(), new net.Socket(), new net.Socket() ]
 
 module.exports.run = async (client, message, args) => {
-  var temp = [ data.ctf, data.ls ]
+  var temp = [ serverData.ctf, serverData.ls ]
   for (var i in temp) {
     connect(sockets[i], temp[i], client)
   }
@@ -34,7 +34,7 @@ async function events (socket, info, client) {
       } else {
         toSend = toSend.split('\n')
         messageId = toSend[2]
-        if (!first) client.channels.get(options.msgsFromServers).send('`' + info.nameFS + ':` ' + toSend[3])
+        if (!first) client.channels.get(options.msgsFromServers).send('`' + info.msgPrefix + ':` ' + toSend[3])
         else first = false
         toSend = ''
       }
