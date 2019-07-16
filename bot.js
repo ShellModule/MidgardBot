@@ -1,13 +1,12 @@
-/* eslint-disable eqeqeq */
 const Discord = require("discord.js");
 const net = require("net");
-const snekfetch = require("snekfetch");
 const auth = require("./auth.json");
-const api = require("./passwords.json");
+const serverData = require("./serverData.json");
 const options = require("./options.json");
 const fs = require("fs");
 const prefix = options.prefix;
 const client = new Discord.Client();
+const servers = new Array();
 client.commands = new Discord.Collection();
 
 fs.readdir("./cmds/", (err, files) => {
@@ -26,22 +25,28 @@ fs.readdir("./cmds/", (err, files) => {
   });
 });
 
-const getStatusURL = (ip, port) =>
-  `https://api.soldat.pl/v0/server/${ip}/${port}`;
-const getPlayersURL = (ip, port) =>
-  `https://api.soldat.pl/v0/server/${ip}/${port}/players`;
+for (var i in serverData) {
+  servers.push(serverData[i].shortName);
+}
 const types = ["name", "kills", "deaths", "team"];
-
-var serversInfo;
-var playersInfo;
 
 client.on("ready", () => {
   console.log(`Bot is ready! ${client.user.username} ` + new Date());
   client.user.setActivity("!cmdhelp for help", { type: "PLAYING" });
   client.commands.get("reactroles").run(client, "", "");
 
-  update();
-  setInterval(update, 60000);
+  if (options.msgserver) {
+    client.commands.get("msgserver").run(client, "", "");
+  } else {
+    console.log("Messages from server are disabled!");
+  }
+
+  if (options.status) {
+    startUpdate();
+    setInterval(startUpdate, 60000);
+  } else {
+    console.log("Status is disabled!");
+  }
 });
 
 client.on("guildMemberAdd", guildMember => {
@@ -61,7 +66,7 @@ client.on("guildMemberAdd", guildMember => {
       "  **`!1v1`** - *1v1 matchmaking*\n" +
       "  **`!status`** - *detailed information on some servers*\n" +
       "  **`!cmdhelp`** - *to show our commands at any time*\n" +
-      //  '  **`!msg help`** - *how to send a message to our servers*\n' +
+      // "  **`!msg help`** - *how to send a message to our servers*\n" +
       "\n***MIDGARD SERVERS***\n<#537011480973934592>\n\n" +
       "You can also check <#533697790187012098> for more information"
   );
@@ -74,242 +79,168 @@ client.on("message", async message => {
   const args = messageArray.slice(1);
 
   if (!command.startsWith(prefix)) return;
-  if (command === "server") return;
+  if (command === "msgserver") return;
   let cmd = client.commands.get(command.slice(prefix.length));
   if (cmd) cmd.run(client, message, args);
 });
 
-async function update() {
-  let fetched = await client.channels
-    .get(options.statusChannel)
-    .fetchMessages({ limit: 10 });
-  client.channels.get(options.statusChannel).bulkDelete(fetched);
-  start();
-}
-
-function start() {
+function startUpdate() {
   let embed = new Discord.RichEmbed()
     .setAuthor(client.user.username, client.user.avatarURL)
     .setColor(Math.floor(Math.random() * 16777214) + 1);
+  getData(embed, 0);
+}
 
-  var sock = new net.Socket();
+async function getData(embed, server) {
+  var socket = new net.Socket();
+  var dataFromServer = "";
+  socket.connect(serverData[servers[server]].port + 10, serverData[servers[server]].ip);
 
-  sock.connect(api.ctf.port + 10, api.ctf.ip);
-
-  sock.on("connect", () => {
-    sock.write("STARTFILES\r\nlogs/gamestat.txt\r\nENDFILES\r\n");
+  socket.on("connect", () => {
+    socket.write("STARTFILES\r\nlogs/gamestat.txt\r\nENDFILES\r\n");
   });
 
-  sock.on("data", data => {
-    if (data.length > 12) {
-      var temp = StrCut(data.toString(), "Players", 0);
-      start2(temp.split("\n"), embed, api.ctf.name);
-    }
-    if (data.toString().includes("ENDFILES")) {
-      sock.destroy();
+  socket.on("data", data => {
+    dataFromServer += data.toString();
+    if (dataFromServer.includes("ENDFILES")) {
+      parseData(embed, StrCut(data.toString(), "Players", 0), server);
+      socket.destroy();
     }
   });
-  sock.on("error", () => {
-    console.log("Midgard [CTF] is unavailable");
-    start2("", embed, "");
-    sock.destroy();
-  });
-  sock.on("end", () => {
-    if (sock.bytesRead == 0) {
-      start2("", embed, "");
-    }
+
+  socket.on("error", () => {
+    console.log(`${serverData[servers[server]].fullName} is unavailable`);
+    parseData(embed, "", server);
+    socket.destroy();
   });
 }
 
-function start2(data1, embed, ava1) {
-  var sock = new net.Socket();
-
-  sock.connect(api.ls.port + 10, api.ls.ip);
-
-  sock.on("connect", () => {
-    sock.write("STARTFILES\r\nlogs/gamestat.txt\r\nENDFILES\r\n");
-  });
-
-  sock.on("data", data => {
-    if (data.length > 12) {
-      var temp = StrCut(data.toString(), "Players", 0);
-      status(data1, temp.split("\n"), embed, ava1, api.ls.name);
-    }
-    if (data.toString().includes("ENDFILES")) {
-      sock.destroy();
-    }
-  });
-
-  sock.on("error", () => {
-    console.log("Midgard [CTF] is unavailable");
-    status(data1, "", embed, ava1, "");
-    sock.destroy();
-  });
-
-  sock.on("end", () => {
-    if (sock.bytesRead == 0) {
-      start2(data1, "", embed, ava1, "");
-    }
-  });
-}
-
-async function status(dataCTF, dataLS, embed, avaCTF, avaLS) {
-  for (var i in api) {
-    if (api[i].name === avaCTF) {
-      embed = main(dataCTF, embed, api[i]);
-    } else if (api[i].name === avaLS) {
-      embed = main(dataLS, embed, api[i]);
-    } else {
-      try {
-        serversInfo = await getData(getStatusURL(api[i].ip, api[i].port));
-      } catch (e) {
-        serversInfo = ["N/A", "N/A", "N/A"];
-        playersInfo = "N/A";
+async function parseData(embed, serverInformation, server) {
+  var gamestat =
+    serverInformation === "" ? "N/A" : new Dane(serverInformation.split("\n"));
+  if (gamestat === "N/A") {
+    embed.addField(
+      serverData[servers[server]].flag + `**${serverData[servers[server]].fullName}**`,
+      ":x:**__Server is unavailable!__**:x:"
+    );
+  } else {
+    var players = new Array();
+    let Alpha = "";
+    let Bravo = "";
+    let Spec = "";
+    let PlayersSorted = sortByKey(gamestat.PlayersInfo, "kills");
+    for (var i in PlayersSorted) {
+      players.push(PlayersSorted[i].name);
+      let toAdd =
+        PlayersSorted[i].kills +
+        "/" +
+        PlayersSorted[i].deaths +
+        " " +
+        PlayersSorted[i].name +
+        "\n";
+      if (PlayersSorted[i].team === "1") {
+        Alpha = Alpha + toAdd;
+      } else if (PlayersSorted[i].team === "2") {
+        Bravo = Bravo + toAdd;
+      } else if (PlayersSorted[i].team === "5") {
+        Spec = Spec + StrCut(toAdd, " ", 1);
       }
-      if (serversInfo[0] !== "N/A") {
-        serversInfo = [
-          serversInfo.NumPlayers,
-          serversInfo.MaxPlayers,
-          serversInfo.CurrentMap
-        ];
-        playersInfo = await getData(getPlayersURL(api[i].ip, api[i].port));
-      }
+    }
+    if (serverData[servers[server]].shortName === "ctf") {
       embed.addField(
-        api[i].flag + "**" + api[i].name2 + "**",
+        serverData[servers[server]].flag + `**${serverData[servers[server]].fullName}**`,
+        "**Address:** " +
+          `<soldat://${serverData[servers[server]].ip}:${
+            serverData[servers[server]].port
+          }>\n` +
+          (gamestat.PlayersNum > 0 ? ":fire: " : "") +
+          `**Players:** \`${gamestat.PlayersNum}/${
+            serverData[servers[server]].maxPlayers
+          }\` <:crouch:533700465670619197>` +
+          `**Map:** \`${gamestat.Map}\`:map:\n` +
+          `**Timeleft:** \`${gamestat.Timeleft}\`:alarm_clock:` +
+          `**Score:** \`${gamestat.Alpha} : ${gamestat.Bravo}\`:checkered_flag:`
+      );
+      if (gamestat.PlayersNum > 0) {
+        embed
+          .addField(
+            "<:redflag:533700464856924181>" + "**Alpha**",
+            Alpha != "" ? "```\n" + Alpha + "\n```" : "**`Alpha is empty!`**",
+            true
+          )
+          .addField(
+            "<:blueflag:533700465142267905>" + "**Bravo**",
+            Bravo != "" ? "```\n" + Bravo + "\n```" : "**`Bravo is empty!`**",
+            true
+          );
+        if (Spec != "") {
+          embed.addField(
+            ":flag_black:" + "**Spectators**",
+            Spec != "" ? "```\n" + Spec + "\n```" : "Spectators are empty!"
+          );
+        }
+      }
+    } else if (serverData[servers[server]].shortName === "ls") {
+      embed.addField(
+        serverData[servers[server]].flag + `**${serverData[servers[server]].fullName}**`,
+        "**Address:** " +
+          `<soldat://${serverData[servers[server]].ip}:${
+            serverData[servers[server]].port
+          }>\n` +
+          (gamestat.PlayersNum > 0 ? ":fire: " : "") +
+          `**Players:** \`${gamestat.PlayersNum}/${
+            serverData[servers[server]].maxPlayers
+          }\` <:crouch:533700465670619197>` +
+          `**Map:** \`${gamestat.Map}\`:map:\n`
+      );
+      if (gamestat.PlayersNum > 0) {
+        embed.addField(
+          "<:blueflag:533700465142267905>" + "**Survivors**",
+          Bravo != "" ? "```\n" + Bravo + "\n```" : "**`No survivors!`**"
+        );
+        if (Spec != "") {
+          embed.addField(
+            ":flag_black:" + "**Spectators**",
+            Spec != "" ? "```\n" + Spec + "\n```" : "Spectators are empty!"
+          );
+        }
+      }
+    } else {
+      embed.addField(
+        serverData[servers[server]].flag + "**" + serverData[servers[server]].fullName + "**",
         "**Address**: " +
-          `<soldat://${api[i].ip}:${api[i].port}>\n` +
-          (serversInfo[0] > 0 ? ":fire: " : "") +
-          "**Players:** `" +
-          (serversInfo[0] === "N/A"
-            ? "N/A"
-            : serversInfo[0] + "/" + serversInfo[1]) +
-          "`<:crouch:533700465670619197> " +
-          "**Map:** `" +
-          serversInfo[2] +
-          "`:map:\n" +
-          (playersInfo === "N/A"
-            ? ""
-            : playersInfo.Players.filter(v => {
-                return v !== "Zombie";
-              }) != ""
+          `<soldat://${serverData[servers[server]].ip}:${
+            serverData[servers[server]].port
+          }>\n` +
+          (gamestat.PlayersNum > 0 ? ":fire: " : "") +
+          `**Players:** \`${gamestat.PlayersNum}/${
+            serverData[servers[server]].maxPlayers
+          }\`<:crouch:533700465670619197> ` +
+          `**Map:** \`${gamestat.Map}\`:map:\n` +
+          (players.filter(v => {
+            return v !== "Zombie";
+          }) != ""
             ? "```\n" +
-              playersInfo.Players.filter(v => {
-                return v !== "Zombie";
-              }).join("  |  ") +
+              players
+                .filter(v => {
+                  return v !== "Zombie";
+                })
+                .join("  |  ") +
               "\n```"
             : "")
       );
     }
   }
-  embed.setTimestamp(new Date());
+  if (server + 1 < servers.length) getData(embed, server + 1);
+  else update(embed);
+}
 
+async function update(embed) {
+  let fetched = await client.channels
+    .get(options.statusChannel)
+    .fetchMessages({ limit: 10 });
+  client.channels.get(options.statusChannel).bulkDelete(fetched);
   client.channels.get(options.statusChannel).send(embed);
-}
-
-async function getData(url) {
-  return snekfetch.get(url).then(t => {
-    return t.body;
-  });
-}
-
-function main(data, embed, server) {
-  let gamestat = new Dane(data);
-  let embedF = embed;
-
-  let Alpha = "";
-  let Bravo = "";
-  let PlayerCounter = 0;
-  let Spec = "";
-  let PlayersSorted = sortByKey(gamestat.PlayersInfo, "kills");
-  for (var i in PlayersSorted) {
-    let toAdd =
-      PlayersSorted[i].kills +
-      "/" +
-      PlayersSorted[i].deaths +
-      " " +
-      PlayersSorted[i].name +
-      "\n";
-    if (PlayersSorted[i].team === "1") {
-      Alpha = Alpha + toAdd;
-    } else if (PlayersSorted[i].team === "2") {
-      PlayerCounter++;
-      Bravo = Bravo + toAdd;
-    } else if (PlayersSorted[i].team === "5") {
-      PlayerCounter++;
-      Spec = Spec + StrCut(toAdd, " ", 1);
-    }
-  }
-  if (server.name === "ctf") {
-    embedF.addField(
-      server.flag + `**${server.name2}**`,
-      "**Address:** " +
-        `<soldat://${server.ip}:${server.port}>\n` +
-        (gamestat.PlayersNum > 0 ? ":fire: " : "") +
-        "**Players:** `" +
-        gamestat.PlayersNum +
-        "/14 `<:crouch:533700465670619197> " +
-        "**Map:** `" +
-        gamestat.Map +
-        "`:map:\n" +
-        "**Timeleft:** " +
-        "`" +
-        gamestat.Timeleft +
-        "`:alarm_clock: " +
-        "**Score:** " +
-        "`" +
-        gamestat.Alpha +
-        " : " +
-        gamestat.Bravo +
-        "`:checkered_flag:"
-    );
-    if (gamestat.PlayersNum > 0) {
-      embedF
-        .addField(
-          "<:redflag:533700464856924181>" + "**Alpha**",
-          Alpha != "" ? "```\n" + Alpha + "\n```" : "**`Alpha is empty!`**",
-          true
-        )
-        .addField(
-          "<:blueflag:533700465142267905>" + "**Bravo**",
-          Bravo != "" ? "```\n" + Bravo + "\n```" : "**`Bravo is empty!`**",
-          true
-        );
-      if (Spec != "") {
-        embedF.addField(
-          ":flag_black:" + "**Spectators**",
-          Spec != "" ? "```\n" + Spec + "\n```" : "Spectators are empty!"
-        );
-      }
-    }
-  }
-  if (server.name === "ls") {
-    embedF.addField(
-      server.flag + `**${server.name2}**`,
-      "**Address:** " +
-        `<soldat://${server.ip}:${server.port}>\n` +
-        (gamestat.PlayersNum > 0 ? ":fire: " : "") +
-        "**Players:** `" +
-        PlayerCounter +
-        "/6 `<:crouch:533700465670619197> " +
-        "**Map:** `" +
-        gamestat.Map +
-        "`:map:\n"
-    );
-    if (PlayerCounter > 0) {
-      embedF.addField(
-        "<:blueflag:533700465142267905>" + "**Survivors**",
-        Bravo != "" ? "```\n" + Bravo + "\n```" : "**`No survivors!`**"
-      );
-      if (Spec != "") {
-        embedF.addField(
-          ":flag_black:" + "**Spectators**",
-          Spec != "" ? "```\n" + Spec + "\n```" : "Spectators are empty!"
-        );
-      }
-    }
-  }
-
-  return embedF;
 }
 
 function sortByKey(array, key) {
@@ -347,7 +278,13 @@ class Dane {
   }
   get PlayersInfo() {
     var arr = [];
-    for (var i = 9; i < this.data.length - 2; i = i + 5) {
+    var wiersz;
+    for (var i in this.data) {
+      if (this.data[i] == "Players list: (name/kills/deaths/team/ping)") {
+        wiersz = parseInt(i, 10) + 1;
+      }
+    }
+    for (var i = wiersz; i < this.data.length - 2; i = i + 5) {
       let obj = {};
       for (var j = 0; j < 4; j++) {
         obj[types[j]] = this.data[i + j];
