@@ -66,7 +66,7 @@ client.on("guildMemberAdd", guildMember => {
       "  **`!1v1`** - *1v1 matchmaking*\n" +
       "  **`!status`** - *detailed information on some servers*\n" +
       "  **`!cmdhelp`** - *to show our commands at any time*\n" +
-      // "  **`!msg help`** - *how to send a message to our servers*\n" +
+      "  **`!msg help`** - *how to send a message to our servers*\n" +
       "\n***MIDGARD SERVERS***\n<#537011480973934592>\n\n" +
       "You can also check <#533697790187012098> for more information"
   );
@@ -128,6 +128,7 @@ async function parseData(embed, serverInformation, server) {
     let Alpha = "";
     let Bravo = "";
     let Spec = "";
+    let PlayersCounter = 0;
     let PlayersSorted = sortByKey(gamestat.PlayersInfo, "kills");
     for (var i in PlayersSorted) {
       players.push(PlayersSorted[i].name);
@@ -141,8 +142,10 @@ async function parseData(embed, serverInformation, server) {
       if (PlayersSorted[i].team === "1") {
         Alpha = Alpha + toAdd;
       } else if (PlayersSorted[i].team === "2") {
+        PlayersCounter++;
         Bravo = Bravo + toAdd;
       } else if (PlayersSorted[i].team === "5") {
+        PlayersCounter++;
         Spec = Spec + StrCut(toAdd, " ", 1);
       }
     }
@@ -154,12 +157,12 @@ async function parseData(embed, serverInformation, server) {
             serversData[servers[server]].port
           }>\n` +
           (gamestat.PlayersNum > 0 ? ":fire: " : "") +
-          `**Players:** \`${gamestat.PlayersNum}/${
+          `**Players:** ${gamestat.PlayersNum}/${
             serversData[servers[server]].maxPlayers
-          }\` <:crouch:533700465670619197>` +
-          `**Map:** \`${gamestat.Map}\`:map:\n` +
-          `**Timeleft:** \`${gamestat.Timeleft}\`:alarm_clock:` +
-          `**Score:** \`${gamestat.Alpha} : ${gamestat.Bravo}\`:checkered_flag:`
+          } <:crouch:533700465670619197>` +
+          `**Map:** ${gamestat.Map}:map:\n` +
+          `**Timeleft:** ${gamestat.Timeleft}:alarm_clock:` +
+          `**Score:** ${gamestat.Alpha} : ${gamestat.Bravo}:checkered_flag:`
       );
       if (gamestat.PlayersNum > 0) {
         embed
@@ -188,10 +191,10 @@ async function parseData(embed, serverInformation, server) {
             serversData[servers[server]].port
           }>\n` +
           (gamestat.PlayersNum > 0 ? ":fire: " : "") +
-          `**Players:** \`${gamestat.PlayersNum}/${
+          `**Players:** ${PlayersCounter}/${
             serversData[servers[server]].maxPlayers
-          }\` <:crouch:533700465670619197>` +
-          `**Map:** \`${gamestat.Map}\`:map:\n`
+          } <:crouch:533700465670619197>` +
+          `**Map:** ${gamestat.Map}:map:\n`
       );
       if (gamestat.PlayersNum > 0) {
         embed.addField(
@@ -213,10 +216,10 @@ async function parseData(embed, serverInformation, server) {
             serversData[servers[server]].port
           }>\n` +
           (gamestat.PlayersNum > 0 ? ":fire: " : "") +
-          `**Players:** \`${gamestat.PlayersNum}/${
+          `**Players:** ${gamestat.PlayersNum}/${
             serversData[servers[server]].maxPlayers
-          }\`<:crouch:533700465670619197> ` +
-          `**Map:** \`${gamestat.Map}\`:map:\n` +
+          }<:crouch:533700465670619197> ` +
+          `**Map:** ${gamestat.Map}:map:\n` +
           (players.filter(v => {
             return v !== "Zombie";
           }) != ""

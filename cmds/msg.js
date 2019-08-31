@@ -16,7 +16,7 @@ module.exports.run = async (client, message, args) => {
   }
   for (var i in serversData) {
     if (flood.indexOf(message.member.user.id) != -1) return message.channel.send('Antiflood')
-    if (args[0] === serversData[i].name) {
+    if (args[0] === serversData[i].shortName) {
       if (serversData[i].password === '') return message.channel.send('I cannot connect to the server')
       args = args.slice(1)
       if (!args[0]) return message.channel.send('You need to type in your message!')
@@ -33,6 +33,7 @@ module.exports.run = async (client, message, args) => {
       sock.on('connect', () => {
         sock.write(serversData[i].password + '\r\n')
         sock.write(`/say Discord[${message.member.user.username}] ${toSend}\r\n`)
+        message.react("📨")
         flood.push(message.member.user.id)
         setTimeout(() => sock.destroy(), 3000)
       })

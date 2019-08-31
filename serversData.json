@@ -3,7 +3,7 @@
         "shortName": "ctf",
         "msgPrefix": "[CTF]",
         "fullName": "Midgard [CTF]",
-        "maxPlayers": 15,
+        "maxPlayers": 32,
         "flag": ":flag_de:",
         "ip": "51.75.74.225",
         "port": 23073,
@@ -27,6 +27,16 @@
         "flag": ":flag_nl:",
         "ip": "188.166.44.152",
         "port": 23074,
+        "password": ""
+    },
+    "zs": {
+        "shortName": "zs",
+        "msgPrefix": "[ZS]",
+        "fullName": "Midgard [Zombie Survival]",
+        "maxPlayers": 8,
+        "flag": ":flag_de:",
+        "ip": "217.160.75.185",
+        "port": 23073,
         "password": ""
     },
     "os": {
@@ -63,7 +73,7 @@
         "shortName": "climb",
         "msgPrefix": "[Climb]",
         "fullName": "Midgard [Climb]",
-        "maxPlayers": 16,
+        "maxPlayers": 12,
         "flag": ":flag_gb:",
         "ip": "51.68.213.93",
         "port": 23082,
@@ -82,7 +92,7 @@
     "htf": {
         "shortName": "htf",
         "msgPrefix": "[HTF]",
-        "fullName": "Midagrd [HTF]",
+        "fullName": "Midgard [HTF]",
         "maxPlayers": 10,
         "flag": ":flag_us:",
         "ip": "162.221.187.210",
