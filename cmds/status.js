@@ -3,270 +3,398 @@ const net = require("net");
 const serversData = require("../serversData.json");
 const options = require("../options.json");
 const types = ["name", "kills", "deaths", "team"];
+const servers = new Array();
 
-class Dane {
-  constructor(data) {
-    this.data = data;
-  }
-
-  get PlayersNum() {
-    return StrCut(this.data[0], " ", 1);
-  }
-  get Map() {
-    return StrCut(this.data[1], " ", 1);
-  }
-  get Timeleft() {
-    return StrCut(this.data[3], " ", 1);
-  }
-  get Alpha() {
-    return StrCut(this.data[4], " ", 4);
-  }
-  get Bravo() {
-    return StrCut(this.data[5], " ", 4);
-  }
-  get PlayersInfo() {
-    var arr = [];
-    var wiersz;
-    for (var i in this.data) {
-      if (this.data[i] == "Players list: (name/kills/deaths/team/ping)") {
-        wiersz = parseInt(i, 10) + 1;
-      }
-    }
-    for (var i = wiersz; i < this.data.length - 2; i = i + 5) {
-      let obj = {};
-      for (var j = 0; j < 4; j++) {
-        obj[types[j]] = this.data[i + j];
-      }
-      arr.push(obj);
-    }
-    return arr;
-  }
+for (var i in serversData) {
+  servers.push(serversData[i].shortName);
 }
 
 module.exports.run = async (client, message, args) => {
   var sock = new net.Socket();
   if (!args[0]) {
     return message.channel.send(
-      "**`!status ctf`** - *detailed information on a **Midgard [CTF]** server*\n" +
-        "**`!status os`** - *detailed information on a **Midgard [OneShots]** server*\n" +
-        "**`!status ls`** - *detailed information on a **(WM)Last Stand** server*\n" +
-        "**`!status 1v1`** - *detailed information on a **private 1v1** server*\n"
+      "**`!status ctf#`** - **Midgard [CTF]** servers. **#** = numbers from 1 to 9.\n" +
+        "**`!status dm#`** - **Midgard [DM]** servers. **#** = numbers from 1 to 3.\n" +
+        "**`!status hns`** - **Midgard [HnS]** server.\n" +
+        "**`!status ls`** - **(WM)Last Stand** server.\n" +
+        "**`!status ko`** - **Midagrd [KO]** server.\n" +
+        "**`!status rambo`** - **Midagrd [Rambo]** server.\n" +
+        "**`!status tm`** - **Midagrd Teammatch** server.\n" +
+        "**`!status htf`** - **Midagrd [HTF]** server.\n" +
+        "**`!status runmode`** - **Midagrd [Run Mode]** server.\n" +
+        "**`!status climb`** - **Midagrd [Climb]** server.\n" +
+        "**`!status m79c`** - **Midagrd [M79 Coop]** server.\n" +
+        "**`!status versus`** - **Midagrd [1v1]** server.\n" +
+        "**`!status zrpg`** - **Midagrd [AlphaZRPG]** server.\n" +
+        "**`!status os`** - **Midgard [OneShots]** server.\n"
     );
-  } else if (args[0] === "ctf") {
-    sock.connect(serversData.ctf.port + 10, serversData.ctf.ip);
-  } else if (args[0] === "ls") {
-    sock.connect(serversData.ls.port + 10, serversData.ls.ip);
-  } else if (args[0] === "os") {
-    sock.connect(serversData.os.port + 10, serversData.os.ip);
-  } else if (args[0] === "1v1") {
-    sock.connect(options.private1v1.port + 10, options.private1v1.ip);
+  } else if (servers.includes(args[0])) {
+    getData(args[0]);
   } else {
-    return message.channel.send("Try **`!status`**");
-  }
-  sock.on("connect", async () => {
-    sock.write("STARTFILES\r\nlogs/gamestat.txt\r\nENDFILES\r\n");
-  });
-
-  sock.on("data", data => {
-    if (data.length > 12) {
-      var temp = StrCut(data.toString(), "Players", 0);
-      main(temp.split("\n"), message, args);
-    }
-    if (data.toString().includes("ENDFILES")) {
-      sock.destroy();
-    }
-  });
-
-  sock.on("error", () => {
-    message.channel.send(
-      "**Midgard [CTF]** is unavailable <:PepeHands:533754872785534999>"
+    return message.channel.send(
+      "Invalid command argument. Checkout **!status** and try again."
     );
-    sock.destroy();
-  });
+  }
 
-  sock.on("end", () => {
-    if (sock.bytesRead == 0) {
+  async function getData(server) {
+    var socket = new net.Socket();
+    var dataFromServer = "";
+    socket.connect(serversData[server].port + 10, serversData[server].ip);
+
+    socket.on("connect", () => {
+      socket.write("STARTFILES\r\nlogs/gamestat.txt\r\nENDFILES\r\n");
+    });
+
+    socket.on("data", data => {
+      dataFromServer += data.toString();
+      if (dataFromServer.includes("ENDFILES")) {
+        parseData(StrCut(data.toString(), "Players", 0), serversData[server]);
+        socket.end();
+      }
+    });
+
+    socket.on("error", () => {
       message.channel.send(
-        "**Midgard [CTF]** is unavailable <:PepeHands:533754872785534999>"
+        `**${serversData[server].fullName}** is unavailable <:PepeHands:533754872785534999>`
       );
+      socket.end();
+    });
+  }
+
+  function parseData(serverInformation, server) {
+    const gamestat = new Dane(serverInformation.split("\n"));
+    let embed = new Discord.RichEmbed()
+      .setColor(Math.floor(Math.random() * 16777214) + 1)
+      .setTitle(`${server.flag}` + `**${server.fullName}**`)
+      .addField(":map:" + "**Map**", "**`" + gamestat.Map + "`**", true)
+      .addField(
+        ":alarm_clock:" + "**Timeleft**",
+        "**`" + gamestat.Timeleft + "`**",
+        true
+      );
+
+    if (server.shortName.match(/^ctf[1-9]$/g)) {
+      embed = embed_ctf(embed, gamestat);
+    } else if (server.shortName.match(/^dm[1-3]$/g)) {
+      embed = embed_dm(embed, gamestat);
+    } else if (server.shortName == "hns") {
+      embed = embed_hns(embed, gamestat);
+    } else if (server.shortName === "os") {
+      embed = embed_os(embed, gamestat);
+    } else if (server.shortName == "ls") {
+      embed = embed_ls(embed, gamestat);
+    } else if (server.shortName == "runmode") {
+      embed = embed_runmode(embed, gamestat);
+    } else if (server.shortName == "ko") {
+      embed = embed_ko(embed, gamestat);
+    } else if (server.shortName == "tm") {
+      embed = embed_tm(embed, gamestat);
+    } else if (server.shortName == "rambo") {
+      embed = embed_rambo(embed, gamestat);
+    } else if (server.shortName == "htf") {
+      embed = embed_ctf(embed, gamestat);
+    } else {
+      embed = embed_others(embed, gamestat);
     }
-  });
+    message.channel.send(embed);
+  }
 };
 
-function main(data, message, args) {
-  const gamestat = new Dane(data);
+function embed_ctf(embed, gamestat) {
+  embed
+    .addField(
+      ":checkered_flag:" + "**Score**",
+      "**`" + gamestat.Alpha + " : " + gamestat.Bravo + "`**"
+    )
+    .addField(
+      "<:redflag:533700464856924181>" + "**Alpha**",
+      gamestat.PlayersInfo.alpha.string != ""
+        ? "```\n" + gamestat.PlayersInfo.alpha.string + "\n```"
+        : "**`Alpha is empty!`**",
+      true
+    )
+    .addField(
+      "<:blueflag:533700465142267905>" + "**Bravo**",
+      gamestat.PlayersInfo.bravo.string != ""
+        ? "```\n" + gamestat.PlayersInfo.bravo.string + "\n```"
+        : "**`Bravo is empty!`**",
+      true
+    )
+    .setTimestamp(new Date());
+  if (gamestat.PlayersInfo.spectators.string != "") {
+    embed.addField(
+      ":flag_black:" + "**Spectators**",
+      "```\n" + gamestat.PlayersInfo.spectators.string + "\n```"
+    );
+  }
+  if (gamestat.PlayersNum >= 2 && gamestat.KiDe != 0) {
+    embed.addField(
+      "<:crouch:533700465670619197>**Best K/D ratio**",
+      `<:uszanowanko:533764245339373588>` +
+        bestKDRatio(gamestat.PlayersInfo.allPlayers).Player
+    );
+  }
+  return embed;
+}
 
-  var embed = new Discord.RichEmbed();
-  var Alpha = "";
-  var Bravo = "";
-  var priv1v1 = new Array();
-  var Spec = "";
-  var PlayerCounter = 0;
-  var totalKills = 0;
-  var PlayersSorted = sortByKey(gamestat.PlayersInfo, "kills");
-  for (var i in PlayersSorted) {
-    let toAdd =
-      PlayersSorted[i].kills +
-      "/" +
-      PlayersSorted[i].deaths +
-      " " +
-      PlayersSorted[i].name +
-      "\n";
-    if (PlayersSorted[i].team === "1") {
-      Alpha = Alpha + toAdd;
-    } else if (PlayersSorted[i].team === "2") {
-      totalKills += parseInt(PlayersSorted[i].kills, 10);
-      PlayerCounter++;
-      Bravo = Bravo + toAdd;
-    } else if (PlayersSorted[i].team === "5") {
-      PlayerCounter++;
-      Spec = Spec + StrCut(toAdd, " ", 1);
-    } else if (PlayersSorted[i].team === "0") {
-      PlayerCounter++;
-      totalKills += parseInt(PlayersSorted[i].kills, 10);
-      priv1v1.push(PlayersSorted[i]);
-    }
+function embed_dm(embed, gamestat) {
+  embed
+    .addField(
+      "<:crouch:533700465670619197>" + "**Players**",
+      gamestat.PlayersInfo.zero.string !== ""
+        ? "```\n" + gamestat.PlayersInfo.zero.string + "\n```"
+        : "**`Empty!`**"
+    )
+    .setTimestamp(new Date());
+  if (gamestat.PlayersInfo.spectators.string != "") {
+    embed.addField(
+      ":flag_black:" + "**Spectators**",
+      "```\n" + gamestat.PlayersInfo.spectators.string + "\n```"
+    );
   }
-  var Deadliest = bestKDRatio(gamestat.PlayersInfo);
-  if (args[0] == "ctf") {
-    embed
-      .setColor(Math.floor(Math.random() * 16777214) + 1)
-      .setTitle(`${serversData.ctf.flag}` + `**${serversData.ctf.fullName}**`)
-      .addField(":map:" + "**Map**", "**`" + gamestat.Map + "`**", true)
-      .addField(
-        ":alarm_clock:" + "**Timeleft**",
-        "**`" + gamestat.Timeleft + "`**",
-        true
-      );
-    embed
-      .addField(
-        ":checkered_flag:" + "**Score**",
-        "**`" + gamestat.Alpha + " : " + gamestat.Bravo + "`**"
-      )
-      .addField(
-        "<:redflag:533700464856924181>" + "**Alpha**",
-        Alpha != "" ? "```\n" + Alpha + "\n```" : "**`Alpha is empty!`**",
-        true
-      )
-      .addField(
-        "<:blueflag:533700465142267905>" + "**Bravo**",
-        Bravo != "" ? "```\n" + Bravo + "\n```" : "**`Bravo is empty!`**",
-        true
-      )
-      .setTimestamp(new Date());
-    if (Spec != "") {
-      embed.addField(
-        ":flag_black:" + "**Spectators**",
-        Spec != "" ? "```\n" + Spec + "\n```" : "Spectators are empty!"
-      );
-    }
-    if (gamestat.PlayersNum >= 2 && gamestat.KiDe != 0) {
-      embed.addField(
-        "<:crouch:533700465670619197>**Deadliest**",
-        `<:uszanowanko:533764245339373588>` + Deadliest.Player
-      );
-    }
-  } else if (args[0] == "os") {
-    embed
-      .setColor(Math.floor(Math.random() * 16777214) + 1)
-      .setTitle(`${serversData.os.flag}` + `**${serversData.os.fullName}**`)
-      .addField(":map:" + "**Map**", "**`" + gamestat.Map + "`**", true)
-      .addField(
-        ":alarm_clock:" + "**Timeleft**",
-        "**`" + gamestat.Timeleft + "`**",
-        true
-      );
-    embed
-      .addField(
-        ":checkered_flag:" + "**Score**",
-        "**`" + gamestat.Alpha + " : " + gamestat.Bravo + "`**"
-      )
-      .addField(
-        "<:redflag:533700464856924181>" + "**Alpha**",
-        Alpha != "" ? "```\n" + Alpha + "\n```" : "**`Alpha is empty!`**",
-        true
-      )
-      .addField(
-        "<:blueflag:533700465142267905>" + "**Bravo**",
-        Bravo != "" ? "```\n" + Bravo + "\n```" : "**`Bravo is empty!`**",
-        true
-      )
-      .setTimestamp(new Date());
-    if (Spec != "") {
-      embed.addField(
-        ":flag_black:" + "**Spectators**",
-        Spec != "" ? "```\n" + Spec + "\n```" : "Spectators are empty!"
-      );
-    }
-    if (gamestat.PlayersNum >= 2 && gamestat.KiDe != 0) {
-      embed.addField(
-        "<:crouch:533700465670619197>**Deadliest**",
-        `<:uszanowanko:533764245339373588>` + Deadliest.Player
-      );
-    }
-  } else if (args[0] == "ls") {
-    embed
-      .setColor(Math.floor(Math.random() * 16777214) + 1)
-      .setTitle(`${serversData.ls.flag}` + `**${serversData.ls.fullName}**`)
-      .addField(":map:" + "**Map**", "**`" + gamestat.Map + "`**", true)
-      .addField(
-        ":alarm_clock:" + "**Timeleft**",
-        "**`" + gamestat.Timeleft + "`**",
-        true
-      )
-      .addField(":crossed_swords:**Total kills**", "**`" + totalKills + "`**")
-      .addField(
-        "<:blueflag:533700465142267905>" + "**Survivors**",
-        Bravo != "" ? "```\n" + Bravo + "\n```" : "**`No survivors!`**",
-        true
-      )
-      .setTimestamp(new Date());
-    if (Spec != "") {
-      embed.addField(
-        ":flag_black:" + "**Spectators**",
-        Spec != "" ? "```\n" + Spec + "\n```" : "Spectators are empty!"
-      );
-    }
-    if (PlayerCounter >= 1 && gamestat.KiDe != 0) {
-      embed.addField(
-        "<:crouch:533700465670619197>**Deadliest**",
-        `<:uszanowanko:533764245339373588>` + Deadliest.Player
-      );
-    }
-  } else if (args[0] == "1v1") {
-    embed
-      .setColor(Math.floor(Math.random() * 16777214) + 1)
-      .setTitle(`${options.private1v1.flag}` + `**${options.private1v1.name}**`)
-      .addField(":map:" + "**Map**", "**`" + gamestat.Map + "`**")
-      .addField(
-        ":alarm_clock:" + "**Timeleft**",
-        "**`" + gamestat.Timeleft + "`**"
-      )
-      .addField(
-        "<:m79:573199130411794432>" + "**1st player**",
-        priv1v1[0] != null
-          ? "```\n" +
-              priv1v1[0].name +
-              "```\n" +
-              ":skull_crossbones:**Kills:** " +
-              priv1v1[0].kills
-          : "**`EMPTY`**",
-        true
-      )
-      .addField(
-        "<:combat_knife:558336993390493733>" + "**2nd player**",
-        priv1v1[1] != null
-          ? "```\n" +
-              priv1v1[1].name +
-              "```\n" +
-              ":skull_crossbones:**Kills:** " +
-              priv1v1[1].kills
-          : "**`EMPTY`**",
-        true
-      )
-      .setTimestamp(new Date());
+  return embed;
+}
+
+function embed_hns(embed, gamestat) {
+  let seekers = "";
+  let hiders = "";
+  gamestat.PlayersInfo.alpha.list.forEach(seeker => {
+    seekers += seeker.name + "\n";
+  });
+  gamestat.PlayersInfo.delta.list.forEach(hider => {
+    hiders += hider.name + "\n";
+  });
+  embed
+    .addField(
+      "👁️" + "**Seeker**",
+      seekers !== "" ? "```\n" + seekers + "\n```" : "**`Empty!`**"
+    )
+    .addField(
+      "<:crouch:533700465670619197>" + "**Hiders**",
+      hiders !== "" ? "```\n" + hiders + "\n```" : "**`Empty!`**"
+    )
+    .setTimestamp(new Date());
+  if (gamestat.PlayersInfo.spectators.string != "") {
+    embed.addField(
+      ":flag_black:" + "**Spectators**",
+      "```\n" + gamestat.PlayersInfo.spectators.string + "\n```"
+    );
   }
-  message.channel.send(embed);
+  return embed;
+}
+
+function embed_os(embed, gamestat) {
+  embed
+    .addField(
+      ":checkered_flag:" + "**Score**",
+      "**`" + gamestat.Alpha + " : " + gamestat.Bravo + "`**"
+    )
+    .addField(
+      "<:redflag:533700464856924181>" + "**Alpha**",
+      gamestat.PlayersInfo.alpha.string != ""
+        ? "```\n" + gamestat.PlayersInfo.alpha.string + "\n```"
+        : "**`Alpha is empty!`**",
+      true
+    )
+    .addField(
+      "<:blueflag:533700465142267905>" + "**Bravo**",
+      gamestat.PlayersInfo.bravo.string != ""
+        ? "```\n" + gamestat.PlayersInfo.bravo.string + "\n```"
+        : "**`Bravo is empty!`**",
+      true
+    )
+    .setTimestamp(new Date());
+  if (gamestat.PlayersInfo.spectators.string != "") {
+    embed.addField(
+      ":flag_black:" + "**Spectators**",
+      "```\n" + gamestat.PlayersInfo.spectators.string + "\n```"
+    );
+  }
+  if (gamestat.PlayersNum >= 2 && gamestat.KiDe != 0) {
+    embed.addField(
+      "<:crouch:533700465670619197>**Deadliest**",
+      `<:uszanowanko:533764245339373588>` +
+        bestKDRatio(gamestat.PlayersInfo.allPlayers).Player
+    );
+  }
+  return embed;
+}
+
+function embed_ls(embed, gamestat) {
+  embed
+    .addField(":crossed_swords:**Total kills**", "**`" + totalKills + "`**")
+    .addField(
+      "<:blueflag:533700465142267905>" + "**Survivors**",
+      gamestat.PlayersInfo.bravo.string != ""
+        ? "```\n" + gamestat.PlayersInfo.bravo.string + "\n```"
+        : "**`No survivors!`**"
+    )
+    .setTimestamp(new Date());
+  if (gamestat.PlayersInfo.spectators.string != "") {
+    embed.addField(
+      ":flag_black:" + "**Spectators**",
+      "```\n" + gamestat.PlayersInfo.spectators.string + "\n```"
+    );
+  }
+  if (PlayerCounter >= 1 && gamestat.KiDe != 0) {
+    embed.addField(
+      "<:crouch:533700465670619197>**Deadliest**",
+      `<:uszanowanko:533764245339373588>` +
+        bestKDRatio(gamestat.PlayersInfo.allPlayers).Player
+    );
+  }
+  return embed;
+}
+
+function embed_runmode(embed, gamestat) {
+  let runners = "";
+  gamestat.PlayersInfo.zero.list.forEach(runner => {
+    runners += runner.name + "\n";
+  });
+  embed
+    .addField(
+      ":runner:" + "**Runners**",
+      runners !== "" ? "```\n" + runners + "\n```" : "**`Empty!`**"
+    )
+    .setTimestamp(new Date());
+  if (gamestat.PlayersInfo.spectators.string != "") {
+    embed.addField(
+      ":flag_black:" + "**Spectators**",
+      "```\n" + gamestat.PlayersInfo.spectators.string + "\n```"
+    );
+  }
+  return embed;
+}
+
+function embed_ko(embed, gamestat) {
+  embed
+    .addField(
+      ":checkered_flag:" + "**Score**",
+      "**`" + gamestat.Alpha + " : " + gamestat.Bravo + "`**"
+    )
+    .addField(
+      "<:redflag:533700464856924181>" + "**Alpha**",
+      gamestat.PlayersInfo.alpha.string != ""
+        ? "```\n" + gamestat.PlayersInfo.alpha.string + "\n```"
+        : "**`Alpha is empty!`**",
+      true
+    )
+    .addField(
+      "<:blueflag:533700465142267905>" + "**Bravo**",
+      gamestat.PlayersInfo.bravo.string != ""
+        ? "```\n" + gamestat.PlayersInfo.bravo.string + "\n```"
+        : "**`Bravo is empty!`**",
+      true
+    )
+    .setTimestamp(new Date());
+  if (gamestat.PlayersInfo.spectators.string != "") {
+    embed.addField(
+      ":flag_black:" + "**Spectators**",
+      "```\n" + gamestat.PlayersInfo.spectators.string + "\n```"
+    );
+  }
+  if (gamestat.PlayersNum >= 2 && gamestat.KiDe != 0) {
+    embed.addField(
+      "<:crouch:533700465670619197>**Deadliest**",
+      `<:uszanowanko:533764245339373588>` + Deadliest.Player
+    );
+  }
+  return embed;
+}
+
+function embed_rambo(embed, gamestat) {
+  embed
+    .addField(
+      "🏹" + "**Players**",
+      gamestat.PlayersInfo.zero.string != ""
+        ? "```\n" + gamestat.PlayersInfo.zero.string + "\n```"
+        : "**`Empty!`**",
+      true
+    )
+    .setTimestamp(new Date());
+  if (gamestat.PlayersInfo.spectators.string != "") {
+    embed.addField(
+      ":flag_black:" + "**Spectators**",
+      "```\n" + gamestat.PlayersInfo.spectators.string + "\n```"
+    );
+  }
+  return embed;
+}
+
+function embed_tm(embed, gamestat) {
+  embed
+    .addField(
+      "🏁**Score**",
+      `🔴 ${gamestat.Alpha}\n` +
+        `🔵 ${gamestat.Bravo}\n` +
+        `🟡 ${gamestat.Charlie}\n` +
+        `🟢 ${gamestat.Delta}\n`
+    )
+    .addField(
+      "🟥 **Alpha**",
+      gamestat.PlayersInfo.alpha.string != ""
+        ? "```\n" + gamestat.PlayersInfo.alpha.string + "\n```"
+        : "**`Alpha is empty!`**",
+      true
+    )
+    .addField(
+      "🟦 **Bravo**",
+      gamestat.PlayersInfo.bravo.string != ""
+        ? "```\n" + gamestat.PlayersInfo.bravo.string + "\n```"
+        : "**`Bravo is empty!`**",
+      true
+    )
+    .addField("\u200b", "\u200b")
+    .addField(
+      "🟨 **Charlie**",
+      gamestat.PlayersInfo.charlie.string != ""
+        ? "```\n" + gamestat.PlayersInfo.charlie.string + "\n```"
+        : "**`Charlie is empty!`**",
+      true
+    )
+    .addField(
+      "🟩 **Delta**",
+      gamestat.PlayersInfo.delta.string != ""
+        ? "```\n" + gamestat.PlayersInfo.delta.string + "\n```"
+        : "**`Delta is empty!`**",
+      true
+    )
+    .setTimestamp(new Date());
+  if (gamestat.PlayersInfo.spectators.string != "") {
+    embed.addField(
+      ":flag_black:" + "**Spectators**",
+      "```\n" + gamestat.PlayersInfo.spectators.string + "\n```"
+    );
+  }
+  if (gamestat.PlayersNum >= 2 && gamestat.KiDe != 0) {
+    embed.addField(
+      "<:crouch:533700465670619197>**Best K/D ratio**",
+      `<:uszanowanko:533764245339373588>` +
+        bestKDRatio(gamestat.PlayersInfo.allPlayers).Player
+    );
+  }
+  return embed;
+}
+
+function embed_others(embed, gamestat) {
+  let players = "";
+  gamestat.PlayersInfo.allPlayers.forEach(player => {
+    players += player.name + "\n";
+  });
+
+  embed
+    .addField(
+      "<:crouch:533700465670619197>" + "**Players**",
+      players != "" ? "```\n" + players + "\n```" : "**`Empty!`**"
+    )
+    .setTimestamp(new Date());
+  if (gamestat.PlayersInfo.spectators.string != "") {
+    embed.addField(
+      ":flag_black:" + "**Spectators**",
+      "```\n" + gamestat.PlayersInfo.spectators.string + "\n```"
+    );
+  }
+  return embed;
 }
 
 function sortByKey(array, key) {
@@ -294,6 +422,112 @@ function StrCut(str, deli, offset) {
   let pos = str.indexOf(deli);
   return str.slice(pos + offset, str.length);
 }
+
+class Dane {
+  constructor(data) {
+    this.data = data;
+    this.players = this.Players();
+  }
+
+  get PlayersNum() {
+    return StrCut(this.data[0], " ", 1);
+  }
+  get Map() {
+    return StrCut(this.data[1], " ", 1);
+  }
+  get Gamemode() {
+    return StrCut(this.data[2], " ", 1);
+  }
+  get Timeleft() {
+    return StrCut(this.data[3], " ", 1);
+  }
+  get Alpha() {
+    return StrCut(this.data[4], " ", 4);
+  }
+  get Bravo() {
+    return StrCut(this.data[5], " ", 4);
+  }
+  get Charlie() {
+    return StrCut(this.data[6], " ", 4);
+  }
+  get Delta() {
+    return StrCut(this.data[7], " ", 4);
+  }
+  get PlayersInfo() {
+    let playersInfo = {
+      allPlayers: new Array(),
+      alpha: {
+        list: new Array(),
+        string: ""
+      },
+      bravo: {
+        list: new Array(),
+        string: ""
+      },
+      charlie: {
+        list: new Array(),
+        string: ""
+      },
+      delta: {
+        list: new Array(),
+        string: ""
+      },
+      spectators: {
+        list: new Array(),
+        string: ""
+      },
+      zero: {
+        list: new Array(),
+        string: ""
+      }
+    };
+    for (let i in this.players) {
+      let player = this.players[i];
+      let toAdd = player.kills + "/" + player.deaths + " " + player.name + "\n";
+      playersInfo.allPlayers.push(player);
+      if (player.team === "1") {
+        playersInfo.alpha.list.push(player);
+        playersInfo.alpha.string += toAdd;
+      } else if (player.team === "2") {
+        playersInfo.bravo.list.push(player);
+        playersInfo.bravo.string += toAdd;
+      } else if (player.team === "3") {
+        playersInfo.charlie.list.push(player);
+        playersInfo.charlie.string += toAdd;
+      } else if (player.team === "4") {
+        playersInfo.delta.list.push(player);
+        playersInfo.delta.string += toAdd;
+      } else if (player.team === "5") {
+        playersInfo.spectators.list.push(player);
+        playersInfo.spectators.string += toAdd;
+      } else if (player.team === "0") {
+        playersInfo.zero.list.push(player);
+        playersInfo.zero.string += toAdd;
+      }
+    }
+    return playersInfo;
+  }
+
+  Players() {
+    var playersInfo = [];
+    const info = ["name", "kills", "deaths", "team"];
+    var row;
+    for (var i in this.data) {
+      if (this.data[i] == "Players list: (name/kills/deaths/team/ping)") {
+        row = parseInt(i, 10) + 1;
+      }
+    }
+    for (var i = row; i < this.data.length - 2; i = i + 5) {
+      let player = {};
+      for (var j = 0; j < info.length; j++) {
+        player[info[j]] = this.data[i + j];
+      }
+      playersInfo.push(player);
+    }
+    return sortByKey(playersInfo, "kills");
+  }
+}
+
 module.exports.help = {
   name: "status"
 };

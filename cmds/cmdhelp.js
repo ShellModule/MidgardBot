@@ -3,10 +3,11 @@ module.exports.run = async (client, message, args) => {
     '__List of available commands:__\n' +
         '  **`!invitelink`** - *link to our discord server*\n' +
         '  **`!roles`** - *how to get a role*\n' +
-        '  **`!linkfix`** - *if links like this one <soldat://localhost:23073/pass>, doesnt work*\n' +
-        '  **`!1v1`** - *1v1 matchmaking*\n' +
-        '  **`!status`** - *detailed information on some servers*\n' 
-        //+ '  **`!msg help`** - *how to send a message to our servers*'
+        '  **`!linkfix`** - *if links like this one <soldat://localhost:23073/pass>, won\'t work*\n' +
+        // '  **`!1v1`** - *1v1 matchmaking*\n' +
+        '  **`!status`** - *servers detailed information*\n'
+        // '  **`!msg help`** - *how to send a message to our servers*\n' +
+        // '  **`!hnsmp`** - *map pack for Hide & Seek server*'
   )
 }
 

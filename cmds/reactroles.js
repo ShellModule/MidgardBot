@@ -1,8 +1,8 @@
 const Discord = require('discord.js')
 const wiadomosc = '570335886546305054'
 
-const roles = ['CTF Player', '1v1 Player', 'Climb/RunMode Player', 'LS Player', 'M79 coop Player', 'ZS Player']
-const rolesEmoji = ['🇨', '🆚', '🇷', '🇱', '🇲', '<:zombie:533703686468272128>']
+const roles = ['CTF Player', '1v1 Player', 'Climb/RunMode Player', 'LS Player', 'M79 coop Player', 'ZS Player', 'HnS Player', 'KO Player']
+const rolesEmoji = ['🇨', '🆚', '🇷', '🇱', '🇲', '<:zombie:533703686468272128>', '🏃', '<:combat_knife:558336993390493733>']
 
 module.exports.run = async (client, message, args) => {
   const events = {
@@ -58,6 +58,7 @@ module.exports.run = async (client, message, args) => {
       }
     }
   })
+
 }
 
 module.exports.help = {
