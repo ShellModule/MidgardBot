@@ -2,217 +2,91 @@
   "ctf1": {
     "shortName": "ctf1",
     "msgPrefix": "[CTF] #1",
-    "fullName": "Midgard [CTF] #1",
-    "maxPlayers": 32,
-    "flag": ":flag_de:",
     "ip": "51.75.74.225",
     "port": 23073
   },
   "ctf2": {
     "shortName": "ctf2",
     "msgPrefix": "[CTF] #2",
-    "fullName": "Midgard [CTF] #2",
-    "maxPlayers": 14,
-    "flag": ":flag_de:",
-    "ip": "138.201.55.232",
-    "port": 26060
+    "ip": "51.75.74.225",
+    "port": 23074
   },
   "ctf3": {
     "shortName": "ctf3",
     "msgPrefix": "[CTF] #3",
-    "fullName": "Midgard [CTF] #3",
-    "maxPlayers": 20,
-    "flag": ":flag_de:",
-    "ip": "136.243.147.172",
-    "port": 23073
-  },
-  "ctf4": {
-    "shortName": "ctf4",
-    "msgPrefix": "[CTF] #4",
-    "fullName": "Midgard [CTF] #4",
-    "maxPlayers": 20,
-    "flag": ":flag_de:",
-    "ip": "136.243.147.172",
-    "port": 23074
-  },
-  "ctf5": {
-    "shortName": "ctf5",
-    "msgPrefix": "[CTF] #5",
-    "fullName": "Midgard [CTF] #5",
-    "maxPlayers": 20,
-    "flag": ":flag_de:",
-    "ip": "136.243.147.172",
+    "ip": "51.75.74.225",
     "port": 23075
-  },
-  "ctf6": {
-    "shortName": "ctf6",
-    "msgPrefix": "[CTF] #6",
-    "fullName": "Midgard [CTF] #6",
-    "maxPlayers": 20,
-    "flag": ":flag_de:",
-    "ip": "136.243.147.172",
-    "port": 23076
-  },
-  "ctf7": {
-    "shortName": "ctf7",
-    "msgPrefix": "[CTF] #7",
-    "fullName": "Midgard [CTF] #7",
-    "maxPlayers": 20,
-    "flag": ":flag_de:",
-    "ip": "136.243.147.172",
-    "port": 23040
-  },
-  "ctf8": {
-    "shortName": "ctf8",
-    "msgPrefix": "[CTF] #8",
-    "fullName": "Midgard [CTF] #8",
-    "maxPlayers": 20,
-    "flag": ":flag_de:",
-    "ip": "136.243.147.172",
-    "port": 23060
-  },
-  "ctf9": {
-    "shortName": "ctf9",
-    "msgPrefix": "[CTF] #9",
-    "fullName": "Midgard [CTF] #9",
-    "maxPlayers": 20,
-    "flag": ":flag_de:",
-    "ip": "136.243.147.172",
-    "port": 23150
   },
   "dm1": {
     "shortName": "dm1",
     "msgPrefix": "[DM] #1",
-    "fullName": "Midgard [DM] #1",
-    "maxPlayers": 20,
-    "flag": ":flag_de:",
-    "ip": "136.243.147.172",
-    "port": 2100
+    "ip": "51.75.74.225",
+    "port": 23076
   },
   "dm2": {
     "shortName": "dm2",
     "msgPrefix": "[DM] #2",
-    "fullName": "Midgard [DM] #2",
-    "maxPlayers": 20,
-    "flag": ":flag_de:",
-    "ip": "136.243.147.172",
-    "port": 21020
-  },
-  "dm3": {
-    "shortName": "dm3",
-    "msgPrefix": "[DM] #3",
-    "fullName": "Midgard [DM] #3",
-    "maxPlayers": 20,
-    "flag": ":flag_de:",
-    "ip": "136.243.147.172",
-    "port": 21040
+    "ip": "51.75.74.225",
+    "port": 23077
   },
   "hns": {
     "shortName": "hns",
     "msgPrefix": "[HnS]",
-    "fullName": "Midgard [HnS]",
-    "maxPlayers": 16,
-    "flag": ":flag_nl:",
     "ip": "188.166.44.152",
     "port": 23075
   },
   "ls": {
     "shortName": "ls",
     "msgPrefix": "[LS]",
-    "fullName": "(WM)Midgard [Last Stand]",
-    "maxPlayers": 7,
-    "flag": ":flag_pl:",
-    "ip": "51.75.74.225",
-    "port": 23273
+    "ip": "188.166.44.152",
+    "port": 23077
   },
-  "ko": {
-    "shortName": "ko",
-    "msgPrefix": "[KO]",
-    "fullName": "Midgard [KO]",
-    "maxPlayers": 32,
-    "flag": ":flag_de:",
-    "ip": "51.75.74.225",
-    "port": 23173
+  "m79c": {
+    "shortName": "m79c",
+    "msgPrefix": "[M79 Coop]",
+    "ip": "188.166.44.152",
+    "port": 23074
   },
-  "rambo": {
-    "shortName": "rambo",
-    "msgPrefix": "[Rambo]",
-    "fullName": "Midgard [Rambo]",
-    "maxPlayers": 20,
-    "flag": ":flag_de:",
-    "ip": "136.243.147.172",
-    "port": 27500
-  },
-  "tm": {
-    "shortName": "tm",
-    "msgPrefix": "[TM]",
-    "fullName": "Midgard Teammatch",
-    "maxPlayers": 14,
-    "flag": ":flag_us:",
-    "ip": "162.221.187.210",
-    "port": 25020
+  "os": {
+    "shortName": "os",
+    "msgPrefix": "[OS]",
+    "ip": "188.166.44.152",
+    "port": 23073
   },
   "htf": {
     "shortName": "htf",
     "msgPrefix": "[HTF]",
-    "fullName": "Midgard [HTF]",
-    "maxPlayers": 10,
-    "flag": ":flag_us:",
     "ip": "162.221.187.210",
     "port": 25000
+  },
+  "tm1": {
+    "shortName": "tm1",
+    "msgPrefix": "[TM #1]",
+    "ip": "191.252.60.121",
+    "port": 23073
+  },
+  "tm2": {
+    "shortName": "tm2",
+    "msgPrefix": "[TM #2]",
+    "ip": "191.252.60.121",
+    "port": 23074
   },
   "runmode": {
     "shortName": "runmode",
     "msgPrefix": "[Run Mode]",
-    "fullName": "Midgard [Run Mode]",
-    "maxPlayers": 16,
-    "flag": ":flag_pl:",
     "ip": "217.182.78.135",
     "port": 23080
   },
   "climb": {
     "shortName": "climb",
     "msgPrefix": "[Climb]",
-    "fullName": "Midgard [Climb]",
-    "maxPlayers": 12,
-    "flag": ":flag_pl:",
     "ip": "217.182.78.135",
     "port": 23082
-  },
-  "m79c": {
-    "shortName": "m79c",
-    "msgPrefix": "[M79 Coop]",
-    "fullName": "Midgard [M79 Coop]",
-    "maxPlayers": 12,
-    "flag": ":flag_nl:",
-    "ip": "188.166.44.152",
-    "port": 23074
   },
   "versus": {
     "shortName": "versus",
     "msgPrefix": "[1v1]",
-    "fullName": "Midgard [1v1]",
-    "maxPlayers": 8,
-    "flag": ":flag_pl:",
     "ip": "217.182.78.135",
     "port": 23081
-  },
-  "zrpg": {
-    "shortName": "zrpg",
-    "msgPrefix": "[ZRPG]",
-    "fullName": "Midgard [AlphaZRPG]",
-    "maxPlayers": 8,
-    "flag": ":flag_pl:",
-    "ip": "217.182.78.135",
-    "port": 23083
-  },
-  "os": {
-    "shortName": "os",
-    "msgPrefix": "[OS]",
-    "fullName": "Midgard [OneShots]",
-    "maxPlayers": 14,
-    "flag": ":flag_nl:",
-    "ip": "188.166.44.152",
-    "port": 23073
   }
 }

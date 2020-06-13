@@ -1,8 +1,8 @@
 const Discord = require('discord.js')
 
 module.exports.run = async (client, message, args) => {
-    if (message.author.id != "") return message.channel.send("You are not ShellModule");
-    client.channels.get('').fetchMessage('').then(msg => {
+    if (message.author.id != "345625219953721344") return message.channel.send("You are not ShellModule");
+    client.channels.get('570335421461037057').fetchMessage('570335886546305054').then(msg => {
         msg.edit(
             '**Hello Midgardo**\n' +
             'React to give yourself a role or unreact to remove it:\n\n' +

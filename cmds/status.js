@@ -1,9 +1,11 @@
 const Discord = require("discord.js");
 const net = require("net");
+const fetch = require("node-fetch");
 const serversData = require("../serversData.json");
-const options = require("../options.json");
-const types = ["name", "kills", "deaths", "team"];
-const servers = new Array();
+const servers = [];
+
+const getStatusURL = (ip, port) =>
+  `http://api.soldat.pl/v0/server/${ip}/${port}`;
 
 for (var i in serversData) {
   servers.push(serversData[i].shortName);
@@ -13,30 +15,29 @@ module.exports.run = async (client, message, args) => {
   var sock = new net.Socket();
   if (!args[0]) {
     return message.channel.send(
-      "**`!status ctf#`** - **Midgard [CTF]** servers. **#** = numbers from 1 to 9.\n" +
-        "**`!status dm#`** - **Midgard [DM]** servers. **#** = numbers from 1 to 3.\n" +
-        "**`!status hns`** - **Midgard [HnS]** server.\n" +
+      "**`!status ctf#`** - **Midgard [CTF]** server. There are 3 servers!\n" +
+        "**`!status dm#`** - **Midgard [DM]** server. There are 2 servers!\n" +
+        "**`!status tm#`** - **Midgard Teammatch** server. There are 2 servers!\n" +
         "**`!status ls`** - **(WM)Last Stand** server.\n" +
-        "**`!status ko`** - **Midagrd [KO]** server.\n" +
-        "**`!status rambo`** - **Midagrd [Rambo]** server.\n" +
-        "**`!status tm`** - **Midagrd Teammatch** server.\n" +
-        "**`!status htf`** - **Midagrd [HTF]** server.\n" +
-        "**`!status runmode`** - **Midagrd [Run Mode]** server.\n" +
-        "**`!status climb`** - **Midagrd [Climb]** server.\n" +
-        "**`!status m79c`** - **Midagrd [M79 Coop]** server.\n" +
-        "**`!status versus`** - **Midagrd [1v1]** server.\n" +
-        "**`!status zrpg`** - **Midagrd [AlphaZRPG]** server.\n" +
-        "**`!status os`** - **Midgard [OneShots]** server.\n"
+        "**`!status hns`** - **Midgard [HnS]** server.\n" +
+        "**`!status ko`** - **Midgard [KO]** server.\n" +
+        "**`!status htf`** - **Midgard [HTF]** server.\n" +
+        "**`!status runmode`** - **Midgard [Run Mode]** server.\n" +
+        "**`!status climb`** - **Midgard [Climb]** server.\n" +
+        "**`!status m79c`** - **Midgard [M79 Coop]** server.\n" +
+        "**`!status versus`** - **Midgard [1v1]** server.\n" +
+        "**`!status os`** - **Midgard [OneShots]** server.\n" +
+        "  **#** in command should be replaced by the server number. For example `!msg ctf2`"
     );
   } else if (servers.includes(args[0])) {
-    getData(args[0]);
+    getServerData(args[0]);
   } else {
     return message.channel.send(
       "Invalid command argument. Checkout **!status** and try again."
     );
   }
 
-  async function getData(server) {
+  async function getServerData(server) {
     var socket = new net.Socket();
     var dataFromServer = "";
     socket.connect(serversData[server].port + 10, serversData[server].ip);
@@ -45,7 +46,16 @@ module.exports.run = async (client, message, args) => {
       socket.write("STARTFILES\r\nlogs/gamestat.txt\r\nENDFILES\r\n");
     });
 
-    socket.on("data", data => {
+    socket.setTimeout(2000);
+
+    socket.on("timeout", async () => {
+      message.channel.send(
+        `Request for **${serversData[server].fullName}** server, has been timed out <:PepeHands:533754872785534999>`
+      );
+      socket.end();
+    });
+
+    socket.on("data", (data) => {
       dataFromServer += data.toString();
       if (dataFromServer.includes("ENDFILES")) {
         parseData(StrCut(data.toString(), "Players", 0), serversData[server]);
@@ -55,48 +65,55 @@ module.exports.run = async (client, message, args) => {
 
     socket.on("error", () => {
       message.channel.send(
-        `**${serversData[server].fullName}** is unavailable <:PepeHands:533754872785534999>`
+        `**${serversData[server].fullName}** server is unavailable <:PepeHands:533754872785534999>`
       );
       socket.end();
     });
   }
 
-  function parseData(serverInformation, server) {
+  async function parseData(serverInformation, server) {
     const gamestat = new Dane(serverInformation.split("\n"));
+    let lobbyData = await getData(getStatusURL(server.ip, server.port));
     let embed = new Discord.RichEmbed()
       .setColor(Math.floor(Math.random() * 16777214) + 1)
-      .setTitle(`${server.flag}` + `**${server.fullName}**`)
-      .addField(":map:" + "**Map**", "**`" + gamestat.Map + "`**", true)
+      .setTitle(
+        `:flag_${lobbyData.Country.toLowerCase()}:` + `**${lobbyData.Name}**`
+      )
+      .addField(":map:" + "**Map**", "**`" + lobbyData.CurrentMap + "`**", true)
       .addField(
         ":alarm_clock:" + "**Timeleft**",
         "**`" + gamestat.Timeleft + "`**",
         true
       );
 
-    if (server.shortName.match(/^ctf[1-9]$/g)) {
-      embed = embed_ctf(embed, gamestat);
-    } else if (server.shortName.match(/^dm[1-3]$/g)) {
-      embed = embed_dm(embed, gamestat);
-    } else if (server.shortName == "hns") {
-      embed = embed_hns(embed, gamestat);
-    } else if (server.shortName === "os") {
-      embed = embed_os(embed, gamestat);
-    } else if (server.shortName == "ls") {
-      embed = embed_ls(embed, gamestat);
-    } else if (server.shortName == "runmode") {
-      embed = embed_runmode(embed, gamestat);
-    } else if (server.shortName == "ko") {
-      embed = embed_ko(embed, gamestat);
-    } else if (server.shortName == "tm") {
-      embed = embed_tm(embed, gamestat);
-    } else if (server.shortName == "rambo") {
-      embed = embed_rambo(embed, gamestat);
-    } else if (server.shortName == "htf") {
-      embed = embed_ctf(embed, gamestat);
+    if (lobbyData === undefined) {
+      return message.channel.send(
+        `**${serversData[server].fullName}** lobby is unavailable <:PepeHands:533754872785534999>`
+      );
     } else {
-      embed = embed_others(embed, gamestat);
+      if (server.shortName.match(/^ctf[1-3]$/g)) {
+        embed = embed_ctf(embed, gamestat, lobbyData);
+      } else if (server.shortName.match(/^dm[1-2]$/g)) {
+        embed = embed_dm(embed, gamestat, lobbyData);
+      } else if (server.shortName === "ls") {
+        embed = embed_ls(embed, gamestat, lobbyData);
+      } else if (server.shortName === "hns") {
+        embed = embed_hns(embed, gamestat, lobbyData);
+      } else if (server.shortName === "os") {
+        embed = embed_os(embed, gamestat, lobbyData);
+      } else if (server.shortName === "runmode") {
+        embed = embed_runmode(embed, gamestat, lobbyData);
+      } else if (server.shortName === "ko") {
+        embed = embed_ko(embed, gamestat, lobbyData);
+      } else if (server.shortName === "tm1" || server.shortName === "tm2") {
+        embed = embed_tm(embed, gamestat, lobbyData);
+      } else if (server.shortName === "htf") {
+        embed = embed_ctf(embed, gamestat, lobbyData);
+      } else {
+        embed = embed_others(embed, gamestat, lobbyData);
+      }
+      message.channel.send(embed);
     }
-    message.channel.send(embed);
   }
 };
 
@@ -158,10 +175,10 @@ function embed_dm(embed, gamestat) {
 function embed_hns(embed, gamestat) {
   let seekers = "";
   let hiders = "";
-  gamestat.PlayersInfo.alpha.list.forEach(seeker => {
+  gamestat.PlayersInfo.alpha.list.forEach((seeker) => {
     seekers += seeker.name + "\n";
   });
-  gamestat.PlayersInfo.delta.list.forEach(hider => {
+  gamestat.PlayersInfo.delta.list.forEach((hider) => {
     hiders += hider.name + "\n";
   });
   embed
@@ -221,8 +238,12 @@ function embed_os(embed, gamestat) {
 }
 
 function embed_ls(embed, gamestat) {
+  let kills = 0;
+  gamestat.PlayersInfo.bravo.list.forEach((player) => {
+    kills += +player.kills;
+  });
   embed
-    .addField(":crossed_swords:**Total kills**", "**`" + totalKills + "`**")
+    .addField(":crossed_swords:**Total kills**", "**`" + kills + "`**")
     .addField(
       "<:blueflag:533700465142267905>" + "**Survivors**",
       gamestat.PlayersInfo.bravo.string != ""
@@ -236,7 +257,12 @@ function embed_ls(embed, gamestat) {
       "```\n" + gamestat.PlayersInfo.spectators.string + "\n```"
     );
   }
-  if (PlayerCounter >= 1 && gamestat.KiDe != 0) {
+  if (
+    gamestat.PlayersInfo.bravo.list.length +
+      gamestat.PlayersInfo.spectators.list.length >=
+      1 &&
+    gamestat.KiDe != 0
+  ) {
     embed.addField(
       "<:crouch:533700465670619197>**Deadliest**",
       `<:uszanowanko:533764245339373588>` +
@@ -248,7 +274,7 @@ function embed_ls(embed, gamestat) {
 
 function embed_runmode(embed, gamestat) {
   let runners = "";
-  gamestat.PlayersInfo.zero.list.forEach(runner => {
+  gamestat.PlayersInfo.zero.list.forEach((runner) => {
     runners += runner.name + "\n";
   });
   embed
@@ -378,7 +404,7 @@ function embed_tm(embed, gamestat) {
 
 function embed_others(embed, gamestat) {
   let players = "";
-  gamestat.PlayersInfo.allPlayers.forEach(player => {
+  gamestat.PlayersInfo.allPlayers.forEach((player) => {
     players += player.name + "\n";
   });
 
@@ -398,7 +424,7 @@ function embed_others(embed, gamestat) {
 }
 
 function sortByKey(array, key) {
-  return array.sort(function(a, b) {
+  return array.sort(function (a, b) {
     var x = parseInt(a[key], 10);
     var y = parseInt(b[key], 10);
     return x < y ? 1 : x > y ? -1 : 0;
@@ -421,6 +447,12 @@ function bestKDRatio(array) {
 function StrCut(str, deli, offset) {
   let pos = str.indexOf(deli);
   return str.slice(pos + offset, str.length);
+}
+
+async function getData(url) {
+  return fetch(url)
+    .then((res) => res.json())
+    .then((body) => body);
 }
 
 class Dane {
@@ -458,28 +490,28 @@ class Dane {
       allPlayers: new Array(),
       alpha: {
         list: new Array(),
-        string: ""
+        string: "",
       },
       bravo: {
         list: new Array(),
-        string: ""
+        string: "",
       },
       charlie: {
         list: new Array(),
-        string: ""
+        string: "",
       },
       delta: {
         list: new Array(),
-        string: ""
+        string: "",
       },
       spectators: {
         list: new Array(),
-        string: ""
+        string: "",
       },
       zero: {
         list: new Array(),
-        string: ""
-      }
+        string: "",
+      },
     };
     for (let i in this.players) {
       let player = this.players[i];
@@ -529,5 +561,5 @@ class Dane {
 }
 
 module.exports.help = {
-  name: "status"
+  name: "status",
 };

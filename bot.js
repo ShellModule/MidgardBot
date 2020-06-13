@@ -28,15 +28,9 @@ client.on("ready", () => {
   client.commands.get("reactroles").run(client, "", "");
 
   if (options.status) {
-    client.commands.get("status_other").run(client, "", "");
+    client.commands.get("status_lobby").run(client, "", "");
   } else {
     console.log("Status on other servers is disabled!");
-  }
-
-  if (options.status_ctf) {
-    client.commands.get("status_ctf").run(client, "", "");
-  } else {
-    console.log("Status on ctf servers is disabled!");
   }
 });
 

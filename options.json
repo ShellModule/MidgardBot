@@ -1,16 +1,6 @@
 {
     "prefix": "!",
     "status": true,
-    "status_ctf": true,
-    "statusChannel": "",
-    "statusChannel_ctf": "",
-    "msgsFromServers": "",
-    "versusChannel": "",
-    "vsPassword": "",
-    "private1v1": {
-        "name": "Private Midgard [1v1]",
-        "flag": ":flag_de:",
-        "ip": "51.75.74.225",
-        "port": 23074
-    }
+    "statusChannel": "695237475467132988",
+    "delimeter": "  •  "
 }
