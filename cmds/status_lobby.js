@@ -16,7 +16,7 @@ for (var i in serversData) {
 module.exports.run = async (client, message, args) => {
   if (options.status) {
     initialEmbed();
-    console.log("Other servers status online.");
+    console.log("Servers status online.");
     setInterval(initialEmbed, 60000);
   } else {
     console.log("Status is disabled!");

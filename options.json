@@ -2,5 +2,6 @@
     "prefix": "!",
     "status": true,
     "statusChannel": "",
+    "reactRolesChannel": "",
     "delimeter": "  •  "
 }
