@@ -15,10 +15,11 @@ module.exports.run = async (client, message, args) => {
   var sock = new net.Socket();
   if (!args[0]) {
     return message.channel.send(
-      "**`!status ctf#`** - **Midgard [CTF]** server. There are 3 servers!\n" +
+      "**`!status ctf#`** - **Midgard [CTF]** server. There are 2 servers!\n" +
         "**`!status dm#`** - **Midgard [DM]** server. There are 2 servers!\n" +
         "**`!status tm#`** - **Midgard Teammatch** server. There are 2 servers!\n" +
-        "**`!status ls`** - **(WM)Last Stand** server.\n" +
+        "**`!status ls#`** - **(WM)Last Stand** server. There are 3 servers!\n" +
+        "**`!status os`** - **Midgard [OneShots]** server.\n" +
         "**`!status hns`** - **Midgard [HnS]** server.\n" +
         "**`!status ko`** - **Midgard [KO]** server.\n" +
         "**`!status htf`** - **Midgard [HTF]** server.\n" +
@@ -26,7 +27,6 @@ module.exports.run = async (client, message, args) => {
         "**`!status climb`** - **Midgard [Climb]** server.\n" +
         "**`!status m79c`** - **Midgard [M79 Coop]** server.\n" +
         "**`!status versus`** - **Midgard [1v1]** server.\n" +
-        "**`!status os`** - **Midgard [OneShots]** server.\n" +
         "  **#** in command should be replaced by the server number. For example `!msg ctf2`"
     );
   } else if (servers.includes(args[0])) {
@@ -74,7 +74,7 @@ module.exports.run = async (client, message, args) => {
   async function parseData(serverInformation, server) {
     const gamestat = new Dane(serverInformation.split("\n"));
     let lobbyData = await getData(getStatusURL(server.ip, server.port));
-    let embed = new Discord.RichEmbed()
+    let embed = new Discord.MessageEmbed()
       .setColor(Math.floor(Math.random() * 16777214) + 1)
       .setTitle(
         `:flag_${lobbyData.Country.toLowerCase()}:` + `**${lobbyData.Name}**`
@@ -95,7 +95,7 @@ module.exports.run = async (client, message, args) => {
         embed = embed_ctf(embed, gamestat, lobbyData);
       } else if (server.shortName.match(/^dm[1-2]$/g)) {
         embed = embed_dm(embed, gamestat, lobbyData);
-      } else if (server.shortName === "ls") {
+      } else if (server.shortName.match(/^ls[1-3]$/g)) {
         embed = embed_ls(embed, gamestat, lobbyData);
       } else if (server.shortName === "hns") {
         embed = embed_hns(embed, gamestat, lobbyData);

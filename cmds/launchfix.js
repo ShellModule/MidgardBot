@@ -1,8 +1,8 @@
 const Discord = require('discord.js')
 
 module.exports.run = async (client, message, args) => {
-  let embed = new Discord.RichEmbed()
-    .setAuthor('Savage', client.users.get(`237702365707370506`).avatarURL)
+  let embed = new Discord.MessageEmbed()
+    .setAuthor('Savage')
     .setDescription("If your Soldat client doesn't launch when you click on links like <soldat://localhost:23073/pass>, try the next steps:\n" +
     '1. Download soldat_uri.vbs here: <https://goo.gl/yb4uPY>.\n' +
     "2. Run the file. It'll now ask for Admin Permissions, this process needs it.\n" +

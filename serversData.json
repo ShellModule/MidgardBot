@@ -11,9 +11,9 @@
     "ip": "51.75.74.225",
     "port": 23074
   },
-  "ctf3": {
-    "shortName": "ctf3",
-    "msgPrefix": "[CTF] #3",
+  "os": {
+    "shortName": "os",
+    "msgPrefix": "[OS]",
     "ip": "51.75.74.225",
     "port": 23075
   },
@@ -35,9 +35,21 @@
     "ip": "188.166.44.152",
     "port": 23075
   },
-  "ls": {
-    "shortName": "ls",
-    "msgPrefix": "[LS]",
+  "ls1": {
+    "shortName": "ls1",
+    "msgPrefix": "[LS] #1",
+    "ip": "51.68.139.217",
+    "port": 23073
+  },
+  "ls2": {
+    "shortName": "ls2",
+    "msgPrefix": "[LS] #2",
+    "ip": "51.68.139.217",
+    "port": 23074
+  },
+  "ls3": {
+    "shortName": "ls3",
+    "msgPrefix": "[LS] #3",
     "ip": "188.166.44.152",
     "port": 23077
   },
@@ -47,9 +59,9 @@
     "ip": "188.166.44.152",
     "port": 23074
   },
-  "os": {
-    "shortName": "os",
-    "msgPrefix": "[OS]",
+  "ko": {
+    "shortName": "ko",
+    "msgPrefix": "[KO]",
     "ip": "188.166.44.152",
     "port": 23073
   },
@@ -70,6 +82,12 @@
     "msgPrefix": "[TM #2]",
     "ip": "191.252.60.121",
     "port": 23074
+  },
+  "ctfbr": {
+    "shortName": "ctfbr",
+    "msgPrefix": "[CTF BR]",
+    "ip": "191.252.60.121",
+    "port": 23075
   },
   "runmode": {
     "shortName": "runmode",

@@ -23,7 +23,7 @@ module.exports.run = async (client, message, args) => {
   }
 
   function initialEmbed() {
-    let embed = new Discord.RichEmbed()
+    let embed = new Discord.MessageEmbed()
       .setAuthor(client.user.username, client.user.avatarURL)
       .setColor(Math.floor(Math.random() * 16777214) + 1);
     getLobbyData(embed);
@@ -64,47 +64,53 @@ module.exports.run = async (client, message, args) => {
     //     `**${serversData[servers[server]].fullName}**`,
     //   ":x:**__Server is unavailable!__**:x:"
     // );
-    for (lobby in lobbyStatus) {
-      if (lobbyStatus[lobby].error !== undefined) {
-        embed.addField(
-          `**${lobby.toUpperCase()}**`,
-          ":x:**__Server is unavailable!__**:x:"
-        );
-      } else {
-        let playersInfo =
-          lobbyStatus[lobby].NumPlayers > 0
-            ? await getData(
-                getPlayersURL(lobbyStatus[lobby].IP, lobbyStatus[lobby].Port)
-              )
-            : "";
-        embed.addField(
-          `:flag_${lobbyStatus[lobby].Country.toLowerCase()}:` +
-            "**" +
-            lobbyStatus[lobby].Name +
-            "**",
-          "**Address**: " +
-            `<soldat://${lobbyStatus[lobby].IP}:${lobbyStatus[lobby].Port}>\n` +
-            (lobbyStatus[lobby].NumPlayers > 0 ? ":fire: " : "") +
-            `**Players:** ${lobbyStatus[lobby].NumPlayers}/${lobbyStatus[lobby].MaxPlayers}<:crouch:533700465670619197> ` +
-            `**Map:** ${lobbyStatus[lobby].CurrentMap}:map:\n` +
-            (lobbyStatus[lobby].NumPlayers === 0 || lobby === "ls"
-              ? ""
-              : "```\n" +
-                playersInfo.Players.join(`${options.delimeter}`) +
-                "\n```")
-        );
+    try {
+      for (lobby in lobbyStatus) {
+        if (lobbyStatus[lobby].error !== undefined) {
+          embed.addField(
+            `**${lobby.toUpperCase()}**`,
+            ":x:**__Server is unavailable!__**:x:"
+          );
+        } else {
+          let playersInfo =
+            lobbyStatus[lobby].NumPlayers > 0
+              ? await getData(
+                  getPlayersURL(lobbyStatus[lobby].IP, lobbyStatus[lobby].Port)
+                )
+              : "";
+          embed.addField(
+            `:flag_${lobbyStatus[lobby].Country.toLowerCase()}:` +
+              "**" +
+              lobbyStatus[lobby].Name +
+              "**",
+            "**Address**: " +
+              `<soldat://${lobbyStatus[lobby].IP}:${lobbyStatus[lobby].Port}>\n` +
+              (lobbyStatus[lobby].NumPlayers > 0 ? ":fire: " : "") +
+              `**Players:** ${lobbyStatus[lobby].NumPlayers}/${lobbyStatus[lobby].MaxPlayers}<:crouch:533700465670619197> ` +
+              `**Map:** ${lobbyStatus[lobby].CurrentMap}:map:\n` +
+              (lobbyStatus[lobby].NumPlayers === 0
+                ? ""
+                : "```\n" +
+                  playersInfo.Players.join(`${options.delimeter}`) +
+                  "\n```")
+          );
+        }
       }
+    } catch (err) {
+      console.log("ERROR in for loop");
     }
 
     update(embed);
   }
 
   async function update(embed) {
-    let fetched = await client.channels
+    let fetched = await client.channels.cache
       .get(options.statusChannel)
-      .fetchMessages({ limit: 100 });
-    client.channels.get(options.statusChannel).bulkDelete(fetched);
-    client.channels.get(options.statusChannel).send(embed);
+      .messages.fetch();
+    fetched.forEach((msg) => {
+      msg.delete();
+    });
+    client.channels.cache.get(options.statusChannel).send(embed);
   }
 };
 
